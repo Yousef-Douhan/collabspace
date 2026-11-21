@@ -28,6 +28,16 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    // Ask AI + meeting summaries. Provider: gemini | openai | anthropic
+    // ("openai" also works for Groq / OpenRouter with AI_BASE_URL).
+    'ai' => [
+        'provider' => env('AI_PROVIDER', 'gemini'),
+        'key' => env('AI_API_KEY'),
+        'model' => env('AI_MODEL'),
+        'base_url' => env('AI_BASE_URL'),
+        'timeout' => (int) env('AI_TIMEOUT', 30),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

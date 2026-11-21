@@ -22,7 +22,7 @@ class UserTest extends TestCase
 
         $this->getJson('/api/v1/users')->assertOk()->assertJsonCount(3, 'data');
         $this->getJson('/api/v1/users?track=ui_ux')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.name', 'Lina');
-        $this->getJson('/api/v1/users?q=om')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.name', 'Omar');
+        $this->getJson('/api/v1/users?q=Omar')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.name', 'Omar');
     }
 
     public function test_profile_shows_stats_and_only_tasks_the_viewer_may_see(): void

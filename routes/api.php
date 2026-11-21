@@ -1,10 +1,18 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AiController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\ConversationController;
+use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\FileController;
+use App\Http\Controllers\Api\V1\MeetingController;
+use App\Http\Controllers\Api\V1\MetaController;
+use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProjectController;
 use App\Http\Controllers\Api\V1\ProjectMemberController;
+use App\Http\Controllers\Api\V1\ReportController;
+use App\Http\Controllers\Api\V1\SearchController;
 use App\Http\Controllers\Api\V1\TaskController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Support\Facades\Route;
@@ -50,5 +58,39 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('files', [FileController::class, 'store'])->name('files.store');
         Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download');
         Route::delete('files/{file}', [FileController::class, 'destroy'])->name('files.destroy');
+
+        // --- Chats ---------------------------------------------------------
+        Route::get('conversations', [ConversationController::class, 'index'])->name('conversations.index');
+        Route::post('conversations', [ConversationController::class, 'store'])->name('conversations.store');
+        Route::patch('conversations/{conversation}', [ConversationController::class, 'update'])->name('conversations.update');
+        Route::get('conversations/{conversation}/messages', [ConversationController::class, 'messages'])->name('conversations.messages.index');
+        Route::post('conversations/{conversation}/messages', [ConversationController::class, 'send'])->name('conversations.messages.store');
+        Route::post('conversations/{conversation}/read', [ConversationController::class, 'read'])->name('conversations.read');
+        Route::get('messages/{message}/attachment', [ConversationController::class, 'attachment'])->name('messages.attachment');
+
+        // --- Meetings ------------------------------------------------------
+        Route::apiResource('meetings', MeetingController::class);
+        Route::post('meetings/{meeting}/respond', [MeetingController::class, 'respond'])->name('meetings.respond');
+        Route::post('meetings/{meeting}/summary', [MeetingController::class, 'summarize'])
+            ->middleware('throttle:10,1')
+            ->name('meetings.summary');
+
+        // --- Notifications -------------------------------------------------
+        Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::patch('notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+        Route::post('notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+
+        // --- Ask AI --------------------------------------------------------
+        Route::post('ai/ask', [AiController::class, 'ask'])->middleware('throttle:20,1')->name('ai.ask');
+        Route::get('ai/messages', [AiController::class, 'history'])->name('ai.history');
+        Route::delete('ai/messages', [AiController::class, 'clear'])->name('ai.clear');
+
+        // --- Dashboard, reports, search, meta -----------------------------
+        Route::get('dashboard', DashboardController::class)->name('dashboard');
+        Route::get('reports/overview', [ReportController::class, 'overview'])->name('reports.overview');
+        Route::get('reports/{report}/export', [ReportController::class, 'export'])->name('reports.export');
+        Route::apiResource('reports', ReportController::class)->except(['update']);
+        Route::get('search', SearchController::class)->name('search');
+        Route::get('meta', MetaController::class)->name('meta');
     });
 });

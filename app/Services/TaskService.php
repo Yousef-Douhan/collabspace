@@ -6,8 +6,10 @@ use App\Enums\TaskStatus;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
+use App\Notifications\TaskAssigned;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 
 class TaskService
 {
@@ -30,7 +32,8 @@ class TaskService
             $task->save();
 
             if (! empty($data['assignees'])) {
-                $task->assignees()->sync($data['assignees']);
+                $attached = $task->assignees()->sync($data['assignees'])['attached'];
+                $this->notifyAssigned($creator, $task, $attached);
             }
 
             $this->activity->log($creator, 'task.created', "created task \"{$task->title}\"", $task, $project);
@@ -53,7 +56,8 @@ class TaskService
             $task->save();
 
             if (array_key_exists('assignees', $data)) {
-                $task->assignees()->sync($data['assignees'] ?? []);
+                $attached = $task->assignees()->sync($data['assignees'] ?? [])['attached'];
+                $this->notifyAssigned($actor, $task, $attached);
             }
 
             $this->activity->log($actor, 'task.updated', "updated task \"{$task->title}\"", $task, $task->project);
@@ -110,6 +114,16 @@ class TaskService
         });
 
         $this->activity->log($actor, 'task.deleted', "deleted task \"{$task->title}\"", $task, $task->project);
+    }
+
+    /** Notify people who were just assigned (never the person doing the assigning). */
+    private function notifyAssigned(User $by, Task $task, array $userIds): void
+    {
+        $recipients = User::whereIn('id', $userIds)->whereKeyNot($by->id)->get();
+
+        if ($recipients->isNotEmpty()) {
+            Notification::send($recipients, new TaskAssigned($task->loadMissing('project'), $by));
+        }
     }
 
     private function nextPosition(Project $project, TaskStatus $status): int

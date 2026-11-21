@@ -24,6 +24,7 @@ class UserSummaryResource extends JsonResource
             'availability' => $this->availability?->value,
             'project_role' => $this->whenPivotLoaded('project_members', fn () => $this->pivot->role),
             'is_reviewer' => $this->whenPivotLoaded('task_user', fn () => (bool) $this->pivot->is_reviewer),
+            'response' => $this->whenPivotLoaded('meeting_user', fn () => $this->pivot->response),
         ];
     }
 }
