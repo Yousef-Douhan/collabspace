@@ -16,6 +16,7 @@ use App\Models\Project;
 use App\Models\ProjectFile;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\FileService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 
@@ -106,7 +107,7 @@ class DatabaseSeeder extends Seeder
             $task->assignees()->attach(collect($assignees)->pluck('id'));
         }
 
-        // --- Files (real files on the public disk so downloads work) ------------
+        // --- Files (real files on the private disk so downloads work) -----------
         $this->file($alpha, $admin, 'alpha-project-scope.md', "# Alpha — Project scope\n\nMVP: projects, kanban, chat, meetings, AI assistant.\n");
         $this->file($alpha, $lina, 'kanban-wireframes-notes.txt', "Kanban wireframes v2\n- 4 columns\n- priority chips\n- assignee avatars\n");
         $this->file($nova, $ahmad, 'nova-brand-colors.txt', "Primary: #4F46E5\nSecondary: #0EA5E9\nSuccess: #10B981\n");
@@ -203,7 +204,7 @@ class DatabaseSeeder extends Seeder
     private function file(Project $project, User $uploader, string $name, string $contents): void
     {
         $path = "projects/{$project->id}/{$name}";
-        Storage::disk('public')->put($path, $contents);
+        Storage::disk(FileService::DISK)->put($path, $contents);
 
         ProjectFile::create([
             'project_id' => $project->id,

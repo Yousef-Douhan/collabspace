@@ -18,7 +18,7 @@ class DatabaseSeederTest extends TestCase
 
     public function test_demo_seeder_builds_a_consistent_workspace(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
 
         $this->seed();
 
@@ -29,7 +29,7 @@ class DatabaseSeederTest extends TestCase
         $this->assertSame(2, Meeting::count());
 
         // Every seeded file really exists on disk, so downloads work.
-        ProjectFile::all()->each(fn (ProjectFile $file) => Storage::disk('public')->assertExists($file->path));
+        ProjectFile::all()->each(fn (ProjectFile $file) => Storage::disk('local')->assertExists($file->path));
 
         // Alpha: 2 of 7 tasks completed.
         $alpha = Project::where('name', 'Alpha')->firstOrFail();

@@ -104,7 +104,7 @@ Index: (project_id, status, position).
 | project_id | FK | cascade |
 | task_id | FK null | null on delete |
 | uploaded_by | FK users | |
-| original_name, path, mime_type | | |
+| original_name, path, mime_type | | stored on the **private** `local` disk — only reachable through the authorized download endpoint |
 | size_bytes | bigint | |
 
 ### conversations
