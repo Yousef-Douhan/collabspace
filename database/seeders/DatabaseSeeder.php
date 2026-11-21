@@ -99,6 +99,7 @@ class DatabaseSeeder extends Seeder
                     TaskStatus::InReview => 80,
                     TaskStatus::Completed => 100,
                 },
+                'estimated_hours' => 8,
                 'position' => $positions[$key],
                 'start_date' => now()->addDays($startOffset),
                 'due_date' => now()->addDays($dueOffset),
@@ -106,6 +107,12 @@ class DatabaseSeeder extends Seeder
             ]);
             $task->assignees()->attach(collect($assignees)->pluck('id'));
         }
+
+        // Review + discussion on the card that is in review.
+        $inReview = Task::where('title', 'Kanban drag & drop on the frontend')->firstOrFail();
+        $inReview->assignees()->attach($lina->id, ['is_reviewer' => true]);
+        $inReview->comments()->create(['user_id' => $lina->id, 'body' => 'Dragging works well. Can we animate the drop?']);
+        $inReview->comments()->create(['user_id' => $omar->id, 'body' => 'Sure, adding a 150ms transition now.']);
 
         // --- Files (real files on the private disk so downloads work) -----------
         $this->file($alpha, $admin, 'alpha-project-scope.md', "# Alpha — Project scope\n\nMVP: projects, kanban, chat, meetings, AI assistant.\n");
@@ -139,6 +146,7 @@ class DatabaseSeeder extends Seeder
             'starts_at' => now()->subHours(2)->startOfHour(),
             'ends_at' => now()->subHour()->startOfHour(),
             'reminder_minutes' => 60,
+            'notes' => "- Move endpoint before Wednesday\n- Omar reviews on Thursday",
             'transcript' => implode("\n", [
                 '[00:01] Yousef Douhan: Let\'s review Alpha progress and blockers.',
                 '[01:20] Lina Haddad: Kanban screens are done; notification overlay is next.',
@@ -148,7 +156,8 @@ class DatabaseSeeder extends Seeder
                 '[07:30] Yousef Douhan: Sara finishes the move endpoint by Wednesday, Omar reviews it Thursday.',
             ]),
         ]);
-        $sync->attendees()->attach([$admin->id, $lina->id, $omar->id, $sara->id]);
+        // The past sync was attended (counts towards "Hours Worked").
+        $sync->attendees()->attach([$admin->id, $lina->id, $omar->id, $sara->id], ['response' => 'accepted']);
 
         $planning = Meeting::create([
             'project_id' => $nova->id,

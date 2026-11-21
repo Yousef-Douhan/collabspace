@@ -16,6 +16,7 @@ class UpdateMeetingRequest extends FormRequest
         return [
             'title' => ['sometimes', 'required', 'string', 'max:255'],
             'agenda' => ['sometimes', 'nullable', 'string', 'max:5000'],
+            'notes' => ['sometimes', 'nullable', 'string', 'max:20000'],
             'location' => ['sometimes', 'nullable', 'string', 'max:255'],
             'meeting_link' => ['sometimes', 'nullable', 'url', 'max:500'],
             'starts_at' => ['sometimes', 'required', 'date'],

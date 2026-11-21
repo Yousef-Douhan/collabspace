@@ -29,6 +29,7 @@ class StoreTaskRequest extends FormRequest
             'priority' => ['required', Rule::enum(Priority::class)],
             'track' => ['required', Rule::enum(Track::class)],
             'progress' => ['nullable', 'integer', 'between:0,100'],
+            'estimated_hours' => ['nullable', 'integer', 'between:0,1000'],
             'start_date' => ['nullable', 'date'],
             'due_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'assignees' => ['nullable', 'array'],
@@ -38,6 +39,8 @@ class StoreTaskRequest extends FormRequest
                 'distinct',
                 Rule::exists('project_members', 'user_id')->where('project_id', $this->integer('project_id')),
             ],
+            // Who reviews the task when it reaches "In Review" (must be a project member).
+            'reviewer_id' => ['nullable', 'integer', Rule::exists('project_members', 'user_id')->where('project_id', $this->integer('project_id'))],
         ];
     }
 

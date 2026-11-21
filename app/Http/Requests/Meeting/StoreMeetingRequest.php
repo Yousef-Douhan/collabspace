@@ -22,6 +22,7 @@ class StoreMeetingRequest extends FormRequest
             'project_id' => ['nullable', 'integer', Rule::exists('projects', 'id')->whereNull('deleted_at')],
             'title' => ['required', 'string', 'max:255'],
             'agenda' => ['nullable', 'string', 'max:5000'],
+            'notes' => ['nullable', 'string', 'max:20000'],
             'location' => ['nullable', 'string', 'max:255'],
             'meeting_link' => ['nullable', 'url', 'max:500'],
             'starts_at' => ['required', 'date'],

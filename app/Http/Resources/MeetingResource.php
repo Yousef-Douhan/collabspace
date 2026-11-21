@@ -19,6 +19,7 @@ class MeetingResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'agenda' => $this->agenda,
+            'notes' => $this->notes,
             'location' => $this->location,
             'meeting_link' => $this->meeting_link,
             'starts_at' => $this->starts_at?->toIso8601String(),
@@ -36,6 +37,8 @@ class MeetingResource extends JsonResource
             'transcript' => $this->when(! $request->routeIs('api.v1.meetings.index'), $this->transcript),
             'ai_summary' => $this->ai_summary,
             'key_points' => $this->key_points ?? [],
+            'comments_count' => $this->whenCounted('comments'),
+            'attachments' => MeetingAttachmentResource::collection($this->whenLoaded('attachments')),
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }

@@ -88,6 +88,18 @@ class ConversationController extends Controller
             ->orderByDesc('id')
             ->cursorPaginate(min(max($request->integer('per_page', 30), 1), 100));
 
+        // Read receipts: who (other than the sender) has read up to each message.
+        $readers = $conversation->participants()->get(['users.id']);
+        foreach ($messages as $message) {
+            $message->read_by_ids = $readers
+                ->filter(fn (User $u) => $u->id !== $message->sender_id
+                    && $u->pivot->last_read_at !== null
+                    && $u->pivot->last_read_at >= $message->created_at->toDateTimeString())
+                ->pluck('id')
+                ->values()
+                ->all();
+        }
+
         $this->chats->markRead($request->user(), $conversation);
 
         return MessageResource::collection($messages);
@@ -110,6 +122,30 @@ class ConversationController extends Controller
         Gate::authorize('view', $conversation);
 
         $this->chats->markRead($request->user(), $conversation);
+
+        return response()->noContent();
+    }
+
+    /** PATCH /messages/{message}  {body} — the sender edits their own message. */
+    public function updateMessage(Request $request, Message $message): MessageResource
+    {
+        Gate::authorize('update', $message);
+
+        $data = $request->validate(['body' => ['required', 'string', 'max:5000']]);
+        $message->update(['body' => $data['body'], 'edited_at' => now()]);
+
+        return new MessageResource($message->load('sender'));
+    }
+
+    /** DELETE /messages/{message} — the sender removes their own message (and its file). */
+    public function destroyMessage(Message $message): Response
+    {
+        Gate::authorize('delete', $message);
+
+        if ($message->attachment_path) {
+            Storage::disk(ChatService::DISK)->delete($message->attachment_path);
+        }
+        $message->delete();
 
         return response()->noContent();
     }

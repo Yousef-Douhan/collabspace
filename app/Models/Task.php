@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Task extends Model
@@ -28,6 +29,7 @@ class Task extends Model
         'priority',
         'track',
         'progress',
+        'estimated_hours',
         'position',
         'start_date',
         'due_date',
@@ -49,6 +51,7 @@ class Task extends Model
             'priority' => Priority::class,
             'track' => Track::class,
             'progress' => 'integer',
+            'estimated_hours' => 'integer',
             'position' => 'integer',
             'start_date' => 'date',
             'due_date' => 'date',
@@ -92,5 +95,10 @@ class Task extends Model
     public function files(): HasMany
     {
         return $this->hasMany(ProjectFile::class);
+    }
+
+    public function comments(): MorphMany
+    {
+        return $this->morphMany(Comment::class, 'commentable')->oldest('id');
     }
 }

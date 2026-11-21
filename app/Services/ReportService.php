@@ -4,11 +4,14 @@ namespace App\Services;
 
 use App\Enums\ReportType;
 use App\Enums\TaskStatus;
+use App\Models\ActivityLog;
 use App\Models\Meeting;
 use App\Models\Project;
 use App\Models\Report;
 use App\Models\Task;
 use App\Models\User;
+use App\Support\Trend;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -36,6 +39,8 @@ class ReportService
 
         return [
             'period' => ['from' => $from?->toDateString(), 'to' => $to?->toDateString()],
+            'kpis' => $this->kpis($projects, $members->pluck('id')),
+            'charts' => $this->charts($projectIds, $members->pluck('id')),
             'totals' => [
                 'projects' => $projects->count(),
                 'tasks' => $tasks->count(),
@@ -98,6 +103,79 @@ class ReportService
             'notes' => $notes,
             'data' => $data,
         ]);
+    }
+
+    /** The three cards at the top of the Report screen, each with its change vs last month. */
+    private function kpis($projects, $memberIds): array
+    {
+        $thisMonth = CarbonImmutable::now()->startOfMonth();
+        $lastMonth = $thisMonth->subMonth();
+        $projectIds = $projects->pluck('id');
+
+        $taskRate = function (CarbonImmutable $from, CarbonImmutable $to) use ($projectIds) {
+            $tasks = Task::whereIn('project_id', $projectIds)->whereBetween('created_at', [$from, $to])->get(['status']);
+
+            return Trend::rate($tasks->where('status', TaskStatus::Completed)->count(), $tasks->count());
+        };
+
+        // A member is "active" in a period if they did anything (activity log) in it.
+        $activeRate = function (CarbonImmutable $from, CarbonImmutable $to) use ($memberIds, $projectIds) {
+            $active = ActivityLog::whereIn('user_id', $memberIds)
+                ->whereIn('project_id', $projectIds)
+                ->whereBetween('created_at', [$from, $to])
+                ->distinct()
+                ->count('user_id');
+
+            return Trend::rate($active, $memberIds->count());
+        };
+
+        $completedProjects = $projects->filter(fn (Project $p) => $p->status->value === 'completed' || $p->completion_percentage === 100)->count();
+
+        $taskNow = $taskRate($thisMonth, CarbonImmutable::now());
+        $taskBefore = $taskRate($lastMonth, $thisMonth->subSecond());
+        $activeNow = $activeRate($thisMonth, CarbonImmutable::now());
+        $activeBefore = $activeRate($lastMonth, $thisMonth->subSecond());
+
+        return [
+            'task_completion_rate' => ['value' => $taskNow, 'change_points' => $taskNow - $taskBefore],
+            'project_completion_rate' => ['value' => Trend::rate($completedProjects, $projects->count()), 'change_points' => null],
+            'team_activity_rate' => ['value' => $activeNow, 'change_points' => $activeNow - $activeBefore],
+        ];
+    }
+
+    /** Series for the three charts on the Report screen (last 6 months). */
+    private function charts($projectIds, $memberIds): array
+    {
+        $months = Trend::months(6);
+        $tasks = Task::whereIn('project_id', $projectIds)->get(['id', 'status', 'due_date', 'created_at', 'completed_at']);
+        $activity = ActivityLog::whereIn('user_id', $memberIds)
+            ->where('created_at', '>=', $months->first())
+            ->get(['id', 'created_at']);
+
+        return [
+            // "Task Completion Time vs Deadline": share of tasks completed that month on/before their due date.
+            'completion_vs_deadline' => $months->map(function (CarbonImmutable $m) use ($tasks) {
+                $done = $tasks->filter(fn (Task $t) => $t->completed_at?->isSameMonth($m));
+                $onTime = $done->filter(fn (Task $t) => $t->due_date === null || $t->completed_at->lte($t->due_date->endOfDay()));
+
+                return ['month' => $m->format('M'), 'completed' => $done->count(), 'on_time' => $onTime->count(), 'on_time_rate' => Trend::rate($onTime->count(), $done->count())];
+            })->values()->all(),
+
+            // "Projects Progress": cumulative % of tasks completed by the end of each month.
+            'projects_progress' => $months->map(function (CarbonImmutable $m) use ($tasks) {
+                $end = $m->endOfMonth();
+                $existing = $tasks->filter(fn (Task $t) => $t->created_at->lte($end));
+                $done = $existing->filter(fn (Task $t) => $t->completed_at && $t->completed_at->lte($end));
+
+                return ['month' => $m->format('M'), 'progress' => Trend::rate($done->count(), $existing->count())];
+            })->values()->all(),
+
+            // "Worker Activity Rate": number of actions logged by the team per month.
+            'worker_activity' => $months->map(fn (CarbonImmutable $m) => [
+                'month' => $m->format('M'),
+                'actions' => $activity->filter(fn ($a) => $a->created_at->isSameMonth($m))->count(),
+            ])->values()->all(),
+        ];
     }
 
     private function rate(int $done, int $total): int

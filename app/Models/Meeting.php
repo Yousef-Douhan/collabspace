@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Meeting extends Model
 {
@@ -19,6 +21,7 @@ class Meeting extends Model
         'created_by',
         'title',
         'agenda',
+        'notes',
         'location',
         'meeting_link',
         'starts_at',
@@ -70,5 +73,15 @@ class Meeting extends Model
         return $this->belongsToMany(User::class)
             ->withPivot('response')
             ->withTimestamps();
+    }
+
+    public function comments(): MorphMany
+    {
+        return $this->morphMany(Comment::class, 'commentable')->oldest('id');
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(MeetingAttachment::class)->latest('id');
     }
 }

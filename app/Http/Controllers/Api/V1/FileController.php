@@ -29,6 +29,7 @@ class FileController extends Controller
             ->with(['project:id,name', 'uploader'])
             ->when($request->filled('project_id'), fn (Builder $q) => $q->where('project_id', $request->integer('project_id')))
             ->when($request->filled('task_id'), fn (Builder $q) => $q->where('task_id', $request->integer('task_id')))
+            ->when($request->filled('uploaded_by'), fn (Builder $q) => $q->where('uploaded_by', $request->integer('uploaded_by')))
             ->when($request->filled('q'), fn (Builder $q) => $q->where('original_name', 'like', '%'.$request->string('q').'%'))
             ->latest()
             ->paginate(min(max($request->integer('per_page', 20), 1), 100));

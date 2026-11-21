@@ -26,6 +26,7 @@ class UpdateTaskRequest extends FormRequest
             'priority' => ['sometimes', Rule::enum(Priority::class)],
             'track' => ['sometimes', Rule::enum(Track::class)],
             'progress' => ['sometimes', 'integer', 'between:0,100'],
+            'estimated_hours' => ['sometimes', 'nullable', 'integer', 'between:0,1000'],
             'start_date' => ['sometimes', 'nullable', 'date'],
             'due_date' => ['sometimes', 'nullable', 'date'],
             'assignees' => ['sometimes', 'nullable', 'array'],
@@ -34,6 +35,7 @@ class UpdateTaskRequest extends FormRequest
                 'distinct',
                 Rule::exists('project_members', 'user_id')->where('project_id', $task->project_id),
             ],
+            'reviewer_id' => ['sometimes', 'nullable', 'integer', Rule::exists('project_members', 'user_id')->where('project_id', $task->project_id)],
         ];
     }
 

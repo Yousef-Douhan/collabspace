@@ -22,6 +22,10 @@ class MessageResource extends JsonResource
                 'type' => $this->attachment_type?->value,
                 'url' => route('api.v1.messages.attachment', $this->resource),
             ] : null,
+            'is_edited' => $this->edited_at !== null,
+            'edited_at' => $this->edited_at?->toIso8601String(),
+            // Ids of participants (other than the sender) who have read this message.
+            'read_by' => $this->whenHas('read_by_ids'),
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }

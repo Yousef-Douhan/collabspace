@@ -32,7 +32,7 @@ class TaskController extends Controller
 
         $query = Task::visibleTo($user)
             ->with(['project:id,name', 'assignees'])
-            ->withCount('files')
+            ->withCount(['files', 'comments'])
             ->when($request->filled('project_id'), fn (Builder $q) => $q->where('project_id', $request->integer('project_id')))
             ->when($request->filled('status'), fn (Builder $q) => $q->where('status', $request->input('status')))
             ->when($request->filled('priority'), fn (Builder $q) => $q->where('priority', $request->input('priority')))
@@ -109,6 +109,6 @@ class TaskController extends Controller
 
     private function resource(Task $task): TaskResource
     {
-        return new TaskResource($task->fresh()->load(['project:id,name', 'creator', 'assignees'])->loadCount('files'));
+        return new TaskResource($task->fresh()->load(['project:id,name', 'creator', 'assignees'])->loadCount(['files', 'comments']));
     }
 }

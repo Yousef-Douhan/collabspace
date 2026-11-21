@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AiController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CommentController;
 use App\Http\Controllers\Api\V1\ConversationController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\FileController;
@@ -52,6 +53,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         // --- Tasks (Kanban) ----------------------------------------------
         Route::apiResource('tasks', TaskController::class);
         Route::patch('tasks/{task}/move', [TaskController::class, 'move'])->name('tasks.move');
+        Route::get('tasks/{task}/comments', [CommentController::class, 'taskIndex'])->name('tasks.comments.index');
+        Route::post('tasks/{task}/comments', [CommentController::class, 'taskStore'])->name('tasks.comments.store');
+
+        // --- Comments (tasks & meetings) --------------------------------
+        Route::patch('comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
+        Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
         // --- Files (private storage, authorized download) ----------------
         Route::get('files', [FileController::class, 'index'])->name('files.index');
@@ -67,10 +74,18 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('conversations/{conversation}/messages', [ConversationController::class, 'send'])->name('conversations.messages.store');
         Route::post('conversations/{conversation}/read', [ConversationController::class, 'read'])->name('conversations.read');
         Route::get('messages/{message}/attachment', [ConversationController::class, 'attachment'])->name('messages.attachment');
+        Route::patch('messages/{message}', [ConversationController::class, 'updateMessage'])->name('messages.update');
+        Route::delete('messages/{message}', [ConversationController::class, 'destroyMessage'])->name('messages.destroy');
 
         // --- Meetings ------------------------------------------------------
         Route::apiResource('meetings', MeetingController::class);
         Route::post('meetings/{meeting}/respond', [MeetingController::class, 'respond'])->name('meetings.respond');
+        Route::put('meetings/{meeting}/notes', [MeetingController::class, 'updateNotes'])->name('meetings.notes');
+        Route::get('meetings/{meeting}/comments', [CommentController::class, 'meetingIndex'])->name('meetings.comments.index');
+        Route::post('meetings/{meeting}/comments', [CommentController::class, 'meetingStore'])->name('meetings.comments.store');
+        Route::post('meetings/{meeting}/attachments', [MeetingController::class, 'storeAttachment'])->name('meetings.attachments.store');
+        Route::get('meeting-attachments/{attachment}/download', [MeetingController::class, 'downloadAttachment'])->name('meeting-attachments.download');
+        Route::delete('meeting-attachments/{attachment}', [MeetingController::class, 'destroyAttachment'])->name('meeting-attachments.destroy');
         Route::post('meetings/{meeting}/summary', [MeetingController::class, 'summarize'])
             ->middleware('throttle:10,1')
             ->name('meetings.summary');

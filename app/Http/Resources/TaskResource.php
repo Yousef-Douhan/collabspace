@@ -31,7 +31,14 @@ class TaskResource extends JsonResource
             'completed_at' => $this->completed_at?->toIso8601String(),
             'creator' => new UserSummaryResource($this->whenLoaded('creator')),
             'assignees' => UserSummaryResource::collection($this->whenLoaded('assignees')),
+            'reviewer' => $this->whenLoaded('assignees', function () {
+                $reviewer = $this->assignees->first(fn ($u) => (bool) $u->pivot->is_reviewer);
+
+                return $reviewer ? new UserSummaryResource($reviewer) : null;
+            }),
+            'estimated_hours' => $this->estimated_hours,
             'files_count' => $this->whenCounted('files'),
+            'comments_count' => $this->whenCounted('comments'),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];

@@ -9,6 +9,7 @@ use App\Models\Project;
 use App\Models\ProjectFile;
 use App\Models\Task;
 use App\Models\User;
+use App\Support\Trend;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -125,8 +126,57 @@ class DashboardService
                     'description' => $a->description,
                     'created_at' => $a->created_at->toIso8601String(),
                 ]),
+            'changes' => $this->monthOverMonth(clone $tasks),
+            'charts' => [
+                'project_overview' => $this->monthlySeries(clone $tasks, 6),
+            ],
             'unread_notifications' => $user->unreadNotifications()->count(),
         ];
+    }
+
+    /**
+     * "+9% from last month" for each stat card: tasks created this month vs last month,
+     * and the completion-rate difference in percentage points.
+     */
+    private function monthOverMonth(Builder $tasks): array
+    {
+        $thisMonth = CarbonImmutable::now()->startOfMonth();
+        $lastMonth = $thisMonth->subMonth();
+
+        $count = function (CarbonImmutable $from, CarbonImmutable $to) use ($tasks) {
+            return (clone $tasks)->whereBetween('created_at', [$from, $to])
+                ->selectRaw('status, count(*) as total')
+                ->groupBy('status')
+                ->pluck('total', 'status');
+        };
+
+        $now = $count($thisMonth, CarbonImmutable::now());
+        $before = $count($lastMonth, $thisMonth->subSecond());
+
+        $pick = fn ($counts, TaskStatus $s) => (int) ($counts[$s->value] ?? 0);
+        $rate = fn ($counts) => Trend::rate($pick($counts, TaskStatus::Completed), (int) $counts->sum());
+
+        return [
+            'todo' => Trend::change($pick($now, TaskStatus::Todo), $pick($before, TaskStatus::Todo)),
+            'in_progress' => Trend::change($pick($now, TaskStatus::InProgress), $pick($before, TaskStatus::InProgress)),
+            'completed' => Trend::change($pick($now, TaskStatus::Completed), $pick($before, TaskStatus::Completed)),
+            'completion_rate_points' => $rate($now) - $rate($before),
+        ];
+    }
+
+    /** Tasks created vs completed per month — the "Project overview" line chart. */
+    private function monthlySeries(Builder $tasks, int $months): array
+    {
+        $since = Trend::months($months)->first();
+        $rows = (clone $tasks)
+            ->where(fn (Builder $q) => $q->where('created_at', '>=', $since)->orWhere('completed_at', '>=', $since))
+            ->get(['id', 'created_at', 'completed_at']);
+
+        return Trend::months($months)->map(fn (CarbonImmutable $month) => [
+            'month' => $month->format('M'),
+            'created' => $rows->filter(fn (Task $t) => $t->created_at->isSameMonth($month))->count(),
+            'completed' => $rows->filter(fn (Task $t) => $t->completed_at?->isSameMonth($month))->count(),
+        ])->values()->all();
     }
 
     private function periodStart(string $period): CarbonImmutable

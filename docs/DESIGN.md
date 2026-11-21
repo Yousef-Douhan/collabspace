@@ -143,6 +143,13 @@ Laravel's built-in **database notifications** table (`php artisan make:notificat
 ### activity_logs
 `user_id`, `project_id` null, `subject_type` + `subject_id` (morph), `action` (e.g. `task.moved`), `description`.
 
+### comments  (polymorphic: tasks and meetings)
+`commentable_type` + `commentable_id`, `user_id`, `body`, `edited_at`.
+
+### meeting_attachments
+`meeting_id`, `uploaded_by`, `original_name`, `path` (private disk), `mime_type`, `size_bytes`.
+Also added: `meetings.notes`, `messages.edited_at`, `tasks.estimated_hours`.
+
 ### ai_messages  (Ask AI chat history)
 `user_id`, `role` (`user` · `assistant`), `content` text.
 
@@ -226,6 +233,24 @@ Auth: `Authorization: Bearer <token>` (Sanctum). Errors: standard Laravel JSON (
 | GET | `/reports` | saved reports |
 | POST | `/reports` | generate + save snapshot |
 | GET | `/reports/{report}/export` | CSV |
+
+### Comments (tasks & meetings)
+| GET/POST | `/tasks/{task}/comments` | Kanban card comment count = `comments_count` |
+|---|---|---|
+| GET/POST | `/meetings/{meeting}/comments` | the meeting "Comments" tab |
+| PATCH / DELETE | `/comments/{comment}` | author only (admins may delete) |
+
+### Additions from the Figma review
+| PATCH / DELETE | `/messages/{message}` | edit / delete own message (`is_edited`) — comment #80 |
+|---|---|---|
+| — | `read_by` on every message in `/conversations/{id}/messages` | read receipts — comment #73 |
+| PUT | `/meetings/{meeting}/notes` | the meeting "Note" tab |
+| POST | `/meetings/{meeting}/attachments` | meeting files — comment #86 |
+| GET / DELETE | `/meeting-attachments/{attachment}[/download]` | |
+| — | `reviewer_id`, `estimated_hours` on tasks | reviewer shown on "In Review" cards; hours feed "Hours Worked" |
+| — | `changes` + `charts.project_overview` on `/dashboard` | "+9% from last month", line chart |
+| — | `kpis` + `charts` on `/reports/overview` | the three KPI cards and three charts |
+| — | `stats.hours_worked` + `recent_activity` on `/users/{user}` | profile cards and "Recent Activities" |
 
 ### Notifications
 | GET | `/notifications` | filter `unread` |

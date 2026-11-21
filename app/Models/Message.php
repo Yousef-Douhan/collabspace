@@ -18,12 +18,14 @@ class Message extends Model
         'attachment_path',
         'attachment_name',
         'attachment_type',
+        'edited_at',
     ];
 
     protected function casts(): array
     {
         return [
             'attachment_type' => AttachmentType::class,
+            'edited_at' => 'datetime',
         ];
     }
 

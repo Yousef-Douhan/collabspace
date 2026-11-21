@@ -23,7 +23,7 @@ class TaskService
         return DB::transaction(function () use ($creator, $project, $data) {
             $status = TaskStatus::from($data['status'] ?? TaskStatus::Todo->value);
 
-            $task = new Task(Arr::except($data, ['assignees', 'project_id']));
+            $task = new Task(Arr::except($data, ['assignees', 'project_id', 'reviewer_id']));
             $task->project()->associate($project);
             $task->created_by = $creator->id;
             $task->status = $status;
@@ -34,6 +34,10 @@ class TaskService
             if (! empty($data['assignees'])) {
                 $attached = $task->assignees()->sync($data['assignees'])['attached'];
                 $this->notifyAssigned($creator, $task, $attached);
+            }
+
+            if (! empty($data['reviewer_id'])) {
+                $this->setReviewer($task, (int) $data['reviewer_id']);
             }
 
             $this->activity->log($creator, 'task.created', "created task \"{$task->title}\"", $task, $project);
@@ -52,12 +56,16 @@ class TaskService
                 $this->move($actor, $task, $newStatus, null, log: false);
             }
 
-            $task->fill(Arr::except($data, ['assignees', 'status', 'project_id']));
+            $task->fill(Arr::except($data, ['assignees', 'status', 'project_id', 'reviewer_id']));
             $task->save();
 
             if (array_key_exists('assignees', $data)) {
                 $attached = $task->assignees()->sync($data['assignees'] ?? [])['attached'];
                 $this->notifyAssigned($actor, $task, $attached);
+            }
+
+            if (array_key_exists('reviewer_id', $data)) {
+                $this->setReviewer($task, $data['reviewer_id'] ? (int) $data['reviewer_id'] : null);
             }
 
             $this->activity->log($actor, 'task.updated', "updated task \"{$task->title}\"", $task, $task->project);
@@ -114,6 +122,18 @@ class TaskService
         });
 
         $this->activity->log($actor, 'task.deleted', "deleted task \"{$task->title}\"", $task, $task->project);
+    }
+
+    /** One reviewer per task: stored on the task_user pivot (is_reviewer). */
+    private function setReviewer(Task $task, ?int $userId): void
+    {
+        $task->assignees()->newPivotStatement()
+            ->where('task_id', $task->id)
+            ->update(['is_reviewer' => false]);
+
+        if ($userId) {
+            $task->assignees()->syncWithoutDetaching([$userId => ['is_reviewer' => true]]);
+        }
     }
 
     /** Notify people who were just assigned (never the person doing the assigning). */
