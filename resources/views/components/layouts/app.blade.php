@@ -84,7 +84,7 @@
             {{-- User menu --}}
             <div x-data="{ open: false }" class="relative">
                 <button @click="open = !open" class="flex items-center gap-2.5 text-start">
-                    <span class="hidden text-end leading-tight sm:block">
+                    <span class="hidden whitespace-nowrap text-end leading-tight lg:block">
                         <span class="block text-xs font-semibold">{{ $user->name }}</span>
                         <span class="block text-[11px] text-slate-500">{{ $user->track?->label() }}</span>
                     </span>
