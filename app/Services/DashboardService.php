@@ -173,7 +173,7 @@ class DashboardService
             ->get(['id', 'created_at', 'completed_at']);
 
         return Trend::months($months)->map(fn (CarbonImmutable $month) => [
-            'month' => $month->format('M'),
+            'month' => $month->translatedFormat('M'),
             'created' => $rows->filter(fn (Task $t) => $t->created_at->isSameMonth($month))->count(),
             'completed' => $rows->filter(fn (Task $t) => $t->completed_at?->isSameMonth($month))->count(),
         ])->values()->all();

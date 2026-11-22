@@ -158,7 +158,7 @@ class ReportService
                 $done = $tasks->filter(fn (Task $t) => $t->completed_at?->isSameMonth($m));
                 $onTime = $done->filter(fn (Task $t) => $t->due_date === null || $t->completed_at->lte($t->due_date->endOfDay()));
 
-                return ['month' => $m->format('M'), 'completed' => $done->count(), 'on_time' => $onTime->count(), 'on_time_rate' => Trend::rate($onTime->count(), $done->count())];
+                return ['month' => $m->translatedFormat('M'), 'completed' => $done->count(), 'on_time' => $onTime->count(), 'on_time_rate' => Trend::rate($onTime->count(), $done->count())];
             })->values()->all(),
 
             // "Projects Progress": cumulative % of tasks completed by the end of each month.
@@ -167,12 +167,12 @@ class ReportService
                 $existing = $tasks->filter(fn (Task $t) => $t->created_at->lte($end));
                 $done = $existing->filter(fn (Task $t) => $t->completed_at && $t->completed_at->lte($end));
 
-                return ['month' => $m->format('M'), 'progress' => Trend::rate($done->count(), $existing->count())];
+                return ['month' => $m->translatedFormat('M'), 'progress' => Trend::rate($done->count(), $existing->count())];
             })->values()->all(),
 
             // "Worker Activity Rate": number of actions logged by the team per month.
             'worker_activity' => $months->map(fn (CarbonImmutable $m) => [
-                'month' => $m->format('M'),
+                'month' => $m->translatedFormat('M'),
                 'actions' => $activity->filter(fn ($a) => $a->created_at->isSameMonth($m))->count(),
             ])->values()->all(),
         ];

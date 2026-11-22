@@ -14,10 +14,10 @@ enum ProjectStatus: string
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::Active => 'Active',
             self::Completed => 'Completed',
             self::Archived => 'Archived',
-        };
+        });
     }
 }

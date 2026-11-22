@@ -14,10 +14,10 @@ enum MeetingResponse: string
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::Pending => 'Pending',
             self::Accepted => 'Accepted',
             self::Declined => 'Declined',
-        };
+        });
     }
 }

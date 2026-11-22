@@ -14,10 +14,10 @@ enum Priority: string
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::High => 'High',
             self::Medium => 'Medium',
             self::Low => 'Low',
-        };
+        });
     }
 }

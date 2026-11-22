@@ -14,10 +14,10 @@ enum AttachmentType: string
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::Image => 'Image',
             self::Audio => 'Audio',
             self::Document => 'Document',
-        };
+        });
     }
 }

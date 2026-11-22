@@ -14,10 +14,10 @@ enum ProjectRole: string
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::Owner => 'Owner',
             self::Manager => 'Manager',
             self::Member => 'Member',
-        };
+        });
     }
 }

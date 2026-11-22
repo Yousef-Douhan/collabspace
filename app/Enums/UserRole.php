@@ -14,10 +14,10 @@ enum UserRole: string
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::Admin => 'Admin',
             self::Manager => 'Manager',
             self::Member => 'Member',
-        };
+        });
     }
 }

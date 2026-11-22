@@ -2,8 +2,35 @@
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
+@source '../views/**/*.blade.php';
+@source '../js/**/*.js';
 
+/* Tokens taken from the Figma "Design system" page (see docs/UI_SPEC.md). */
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+
+    --color-canvas: #F6F8FA;
+    --color-brand: #0B5FFF;
+    --color-brand-50: #EEF4FF;
+    --color-brand-100: #DCE7FF;
+    --color-brand-700: #0848C4;
+    --color-ink: #0F172A;
 }
+
+@layer components {
+    .card { @apply rounded-2xl border border-slate-200/70 bg-white; }
+    .btn-primary { @apply inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition disabled:opacity-60 bg-brand text-white hover:bg-brand-700; }
+    .btn-ghost { @apply inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition disabled:opacity-60 border border-slate-300 bg-white text-slate-700 hover:bg-slate-50; }
+    .btn-danger { @apply inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition disabled:opacity-60 bg-rose-50 text-rose-700 hover:bg-rose-100; }
+    .input { @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand-100; }
+    .label { @apply mb-1 block text-xs font-medium text-slate-600; }
+    .chip { @apply inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium; }
+    .tab { @apply border-b-2 border-transparent px-1 pb-2 text-sm text-slate-500 hover:text-slate-800; }
+    .tab-active { @apply border-brand font-medium text-brand; }
+    .prose-chat p { @apply mb-1.5; }
+    .prose-chat ul { @apply mb-1.5 list-disc ps-5; }
+    .prose-chat ol { @apply mb-1.5 list-decimal ps-5; }
+    .prose-chat strong { @apply font-semibold; }
+}
+
+[x-cloak] { display: none !important; }

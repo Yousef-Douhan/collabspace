@@ -15,11 +15,11 @@ enum ReportType: string
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::ProjectProgress => 'Project Progress',
             self::TeamPerformance => 'Team Performance',
             self::Tasks => 'Tasks',
             self::Meetings => 'Meetings',
-        };
+        });
     }
 }

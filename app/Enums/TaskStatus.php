@@ -15,11 +15,11 @@ enum TaskStatus: string
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::Todo => 'To-do',
             self::InProgress => 'In Progress',
             self::InReview => 'In Review',
             self::Completed => 'Completed',
-        };
+        });
     }
 }

@@ -14,10 +14,10 @@ enum Availability: string
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::Available => 'Available',
             self::Busy => 'Busy',
             self::Away => 'Away',
-        };
+        });
     }
 }

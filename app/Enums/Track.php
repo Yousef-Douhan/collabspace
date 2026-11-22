@@ -15,11 +15,11 @@ enum Track: string
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::UiUx => 'UI/UX',
             self::FrontEnd => 'Front End',
             self::BackEnd => 'Back End',
             self::GraphicDesign => 'Graphic Design',
-        };
+        });
     }
 }
