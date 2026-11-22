@@ -9,6 +9,9 @@
         ['Meetings', 'meetings.index', 'meetings.*'],
         ['Reports', 'reports.index', 'reports.*'],
     ];
+    if ($user->isAdmin()) {
+        $nav[] = ['Admin', 'admin.index', 'admin.*'];
+    }
     $unread = $user->unreadNotifications()->count();
     $latest = $user->notifications()->limit(6)->get();
 @endphp
@@ -94,6 +97,9 @@
                      class="absolute end-0 mt-2 w-48 overflow-hidden rounded-2xl border border-slate-200 bg-white py-1 shadow-xl">
                     <a href="{{ route('members.show', $user) }}" class="block px-4 py-2 text-sm hover:bg-slate-50">{{ __('My profile') }}</a>
                     <a href="{{ route('settings.edit') }}" class="block px-4 py-2 text-sm hover:bg-slate-50">{{ __('Settings') }}</a>
+                    @if ($user->isAdmin())
+                        <a href="{{ route('admin.users') }}" class="block px-4 py-2 text-sm hover:bg-slate-50">{{ __('Manage users') }}</a>
+                    @endif
                     <a href="{{ route('files.index') }}" class="block px-4 py-2 text-sm hover:bg-slate-50">{{ __('Files') }}</a>
                     <a href="{{ route('ai.index') }}" class="block px-4 py-2 text-sm hover:bg-slate-50">{{ __('Ask AI') }}</a>
                     <form method="POST" action="{{ route('logout') }}">@csrf

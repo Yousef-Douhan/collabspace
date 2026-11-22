@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AdminController;
 use App\Http\Controllers\Api\V1\AiController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CommentController;
@@ -40,6 +41,14 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::put('me/password', [ProfileController::class, 'updatePassword'])->name('me.password');
 
         // --- Members directory -------------------------------------------
+        // --- Admin (workspace admins only) --------------------------------
+        Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+            Route::get('stats', [AdminController::class, 'stats'])->name('stats');
+            Route::get('users', [AdminController::class, 'users'])->name('users');
+            Route::patch('users/{user}/role', [AdminController::class, 'updateRole'])->name('users.role');
+            Route::patch('users/{user}/status', [AdminController::class, 'updateStatus'])->name('users.status');
+        });
+
         Route::get('users', [UserController::class, 'index'])->name('users.index');
         Route::get('users/{user}', [UserController::class, 'show'])->name('users.show');
 

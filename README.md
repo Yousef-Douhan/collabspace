@@ -10,7 +10,7 @@ Built with Laravel 13 for the **Huma-volve CollabSpace Challenge** · Figma: *Co
 ![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
 ![Alpine.js](https://img.shields.io/badge/Alpine.js-3-8BC0D0?logo=alpinedotjs&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-93_passing-2EA44F)
+![Tests](https://img.shields.io/badge/tests-100_passing-2EA44F)
 ![i18n](https://img.shields.io/badge/i18n-English_%7C_Arabic_(RTL)-0B5FFF)
 
 [Overview](#-overview) · [Features](#-features) · [Screenshots](#-screenshots) · [Quick start](#-quick-start) · [API](#-rest-api) · [Architecture](#-architecture) · [Testing](#-testing)
@@ -28,11 +28,11 @@ CollabSpace gives a team one place to plan work, talk, meet and see progress. On
 | Client | Auth | Purpose |
 |---|---|---|
 | **Blade web app** | Session | The full UI from the Figma design, in English and Arabic (RTL) |
-| **REST API** `/api/v1` | Sanctum tokens | For mobile and SPA clients. Ships with a 71-request Postman collection |
+| **REST API** `/api/v1` | Sanctum tokens | For mobile and SPA clients. Ships with a 76-request Postman collection |
 
 Both clients go through the **same Form Requests, Policies and Services**, so validation, permissions and business rules are defined once.
 
-> **نبذة بالعربية:** منصة تعاون للفرق، فيها إدارة المشاريع، ولوحة مهام Kanban بالسحب والإفلات، ومحادثات مع علامات القراءة، واجتماعات بتقويم أسبوعي وملخص بالذكاء الاصطناعي، وتقارير ورسوم بيانية، ومساعد ذكي يجيب من بيانات الفريق. الواجهة كاملة بالعربية والإنجليزية مع دعم الكتابة من اليمين لليسار، ومعها REST API موثّق و93 اختباراً آلياً.
+> **نبذة بالعربية:** منصة تعاون للفرق، فيها إدارة المشاريع، ولوحة مهام Kanban بالسحب والإفلات، ومحادثات مع علامات القراءة، واجتماعات بتقويم أسبوعي وملخص بالذكاء الاصطناعي، وتقارير ورسوم بيانية، ومساعد ذكي يجيب من بيانات الفريق. الواجهة كاملة بالعربية والإنجليزية مع دعم الكتابة من اليمين لليسار، ومعها REST API موثّق و100 اختبار آلي.
 
 ---
 
@@ -61,6 +61,11 @@ Both clients go through the **same Form Requests, Policies and Services**, so va
 
 - **Bilingual UI:** a one-click English ⇄ العربية switch with a full right-to-left layout, Arabic dates, Arabic validation messages and Arabic chart axes.
 - **Profiles:** completed tasks, hours worked, recent activity, avatar, and a password change.
+
+### Administration
+
+- **🛡 Admin panel** (admins only): workspace-wide stats (users, projects, tasks, overdue work, files, meetings, messages, AI usage), users by role, and a site-wide activity feed.
+- **User management:** search and filter users, change roles, and deactivate or reactivate accounts. A deactivated user is signed out everywhere (web session and API tokens) and cannot sign in again until an admin reactivates them. The workspace always keeps at least one active admin, and admins cannot demote or deactivate themselves.
 
 ---
 
@@ -105,13 +110,15 @@ Open **http://127.0.0.1:8000** and sign in with `admin@collabspace.test` / `pass
 
 During development, run `npm run dev` next to `php artisan serve` so CSS and JS changes reload instantly.
 
+> **File uploads:** the app accepts files up to 20 MB, but PHP's own limit is often 2 MB. If uploads fail, set `upload_max_filesize = 20M` and `post_max_size = 25M` in the `php.ini` shown by `php --ini`, then restart the server.
+
 ### Demo accounts
 
 Every account uses the password **`password`**.
 
 | Email | Name | Role | Track |
 |---|---|---|---|
-| `admin@collabspace.test` | Yousef Douhan | Admin, sees all projects | Back End |
+| `admin@collabspace.test` | Yousef Douhan | **Admin**: sees all projects, opens the Admin panel | Back End |
 | `lina@collabspace.test` | Lina Haddad | Manager | UI/UX |
 | `omar@collabspace.test` | Omar Khaled | Member | Front End |
 | `sara@collabspace.test` | Sara Nasser | Member | Back End |
@@ -184,6 +191,7 @@ curl -X PATCH http://127.0.0.1:8000/api/v1/tasks/5/move \
 | `ai` | `ask`, history |
 | `dashboard`, `reports`, `search` | aggregates, KPIs and charts, CSV export, global search |
 | `notifications`, `meta` | list, read, read-all; enums for client dropdowns |
+| `admin` | workspace stats, user list with filters, change role, deactivate and reactivate (admins only) |
 
 </details>
 
@@ -217,6 +225,7 @@ curl -X PATCH http://127.0.0.1:8000/api/v1/tasks/5/move \
 | **Private `local` disk for files** | Nothing is publicly reachable. Every download passes a policy check. |
 | **Provider-agnostic `AiService`** | Switching between Gemini, OpenAI and Anthropic is an `.env` change. Failures surface as a clean `503`. |
 | **Backed enums with translated labels** | Type-safe statuses and priorities, the same labels in the UI and the API, and Arabic for free. |
+| **Deactivate, don't delete** | Disabling an account keeps the user's tasks, files and history intact. Tokens are revoked at once, and web sessions end on their next request. |
 | **`SetLocale` middleware** | Picks the language from API `Accept-Language`, then the session, then the user's saved preference. |
 
 ### Project structure
@@ -227,7 +236,7 @@ app/
 ├── Http/
 │   ├── Controllers/Api/V1/   REST controllers
 │   ├── Controllers/Web/      Blade controllers
-│   ├── Middleware/           SetLocale
+│   ├── Middleware/           SetLocale, EnsureAdmin, EnsureActiveUser
 │   ├── Requests/             Form Requests (shared)
 │   └── Resources/            API Resources
 ├── Models/  Policies/  Services/  Notifications/  Console/Commands/
@@ -247,13 +256,14 @@ tests/Feature/                Api/ · Web/
 php artisan test
 ```
 
-**93 tests, all passing.** The suite runs on in-memory SQLite and fakes every AI call, so it needs no database or API key.
+**100 tests, all passing.** The suite runs on in-memory SQLite and fakes every AI call, so it needs no database or API key.
 
 | Suite | Coverage |
 |---|---|
 | `Feature/Api/*` (14 files) | Auth, projects and roles, tasks and Kanban ordering, files, chats and receipts, meetings and reminders, AI, notifications, dashboard, reports, search, and permission boundaries |
 | `Feature/Web/WebPagesTest` | Every Blade page renders; login and logout; Kanban move; forms; live chat polling; access control |
 | `Feature/Web/LocaleTest` | Language switching, RTL on every page, Arabic validation, API `Accept-Language` |
+| `Feature/AdminTest` | Admin-only access, role changes, the last-admin and self-protection rules, deactivation ending web and API sessions, admin API |
 | `Feature/DatabaseSeederTest` | The demo workspace is consistent |
 
 ---

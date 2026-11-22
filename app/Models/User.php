@@ -56,6 +56,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'track' => Track::class,
             'role' => UserRole::class,
+            'deactivated_at' => 'datetime',
             'availability' => Availability::class,
             'years_of_experience' => 'integer',
             'joined_at' => 'date',
@@ -65,6 +66,11 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->deactivated_at === null;
     }
 
     public function getAvatarUrlAttribute(): ?string

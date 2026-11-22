@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\Facades\Schema;
+use Laravel\Sanctum\Sanctum;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -22,5 +23,10 @@ class AppServiceProvider extends ServiceProvider
     {
         // WAMP's MySQL limits index keys to 767 bytes: 191 chars x 4 bytes (utf8mb4) fits.
         Schema::defaultStringLength(191);
+
+        // API tokens of deactivated accounts stop working immediately.
+        Sanctum::authenticateAccessTokensUsing(
+            fn ($accessToken, bool $isValid) => $isValid && $accessToken->tokenable?->isActive(),
+        );
     }
 }

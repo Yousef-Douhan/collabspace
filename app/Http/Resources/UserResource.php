@@ -20,6 +20,8 @@ class UserResource extends JsonResource
             'job_title' => $this->job_title,
             'track' => $this->track?->value,
             'role' => $this->role?->value,
+            'is_active' => $this->deactivated_at === null,
+            'deactivated_at' => $this->deactivated_at?->toIso8601String(),
             'availability' => $this->availability?->value,
             'years_of_experience' => $this->years_of_experience,
             'about' => $this->about,

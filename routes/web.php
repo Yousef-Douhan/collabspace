@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Web\AdminController;
 use App\Http\Controllers\Web\AiController;
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\ChatController;
@@ -108,6 +109,14 @@ Route::middleware('auth')->group(function () {
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('notifications/{id}', [NotificationController::class, 'open'])->name('notifications.open');
     Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
+
+    // Admin panel
+    Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/', [AdminController::class, 'index'])->name('index');
+        Route::get('users', [AdminController::class, 'users'])->name('users');
+        Route::patch('users/{user}/role', [AdminController::class, 'updateRole'])->name('users.role');
+        Route::patch('users/{user}/status', [AdminController::class, 'updateStatus'])->name('users.status');
+    });
 
     // Members & settings
     Route::get('members/{user}', [MemberController::class, 'show'])->name('members.show');

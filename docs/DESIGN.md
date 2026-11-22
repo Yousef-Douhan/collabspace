@@ -58,6 +58,7 @@ Enums are stored as strings and backed by PHP enums in `app/Enums`.
 | job_title | string null | |
 | track | string | `ui_ux` · `front_end` · `back_end` · `graphic_design` |
 | role | string | `admin` · `manager` · `member` (workspace-level) |
+| deactivated_at | timestamp null | set by an admin; blocks sign-in (null = active) |
 | availability | string | `available` · `busy` · `away` |
 | years_of_experience | tinyint | |
 | about | text null | |
@@ -234,6 +235,13 @@ Auth: `Authorization: Bearer <token>` (Sanctum). Errors: standard Laravel JSON (
 | POST | `/reports` | generate + save snapshot |
 | GET | `/reports/{report}/export` | CSV |
 
+### Admin (route middleware `admin`)
+| GET | `/admin/stats` | workspace-wide counts + recent activity |
+|---|---|---|
+| GET | `/admin/users` | filter `q`, `role`, `status=active\|deactivated` |
+| PATCH | `/admin/users/{user}/role` | `{role}`; not yourself, never the last admin |
+| PATCH | `/admin/users/{user}/status` | `{active}`; deactivating revokes API tokens |
+
 ### Comments (tasks & meetings)
 | GET/POST | `/tasks/{task}/comments` | Kanban card comment count = `comments_count` |
 |---|---|---|
@@ -274,6 +282,7 @@ Auth: `Authorization: Bearer <token>` (Sanctum). Errors: standard Laravel JSON (
 * **Conversation**: participants only.
 * **Meeting**: attendees and project members can view; creator/admin can update/delete.
 * Users only ever see projects they belong to (admins see all).
+* **Admin panel / `/admin/*`**: workspace admins only (`EnsureAdmin`). Deactivated accounts cannot sign in; their tokens are rejected (`Sanctum::authenticateAccessTokensUsing`) and web sessions end (`EnsureActiveUser`).
 
 ---
 

@@ -31,6 +31,11 @@ class AuthController extends Controller
             throw ValidationException::withMessages(['email' => __('auth.failed')]);
         }
 
+        if (! Auth::user()->isActive()) {
+            Auth::logout();
+            throw ValidationException::withMessages(['email' => __('Your account has been deactivated. Contact a workspace admin.')]);
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard'));

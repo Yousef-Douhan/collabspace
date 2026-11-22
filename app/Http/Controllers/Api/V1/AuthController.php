@@ -45,6 +45,12 @@ class AuthController extends Controller
             ]);
         }
 
+        if (! $user->isActive()) {
+            throw ValidationException::withMessages([
+                'email' => [__('Your account has been deactivated. Contact a workspace admin.')],
+            ]);
+        }
+
         return $this->tokenResponse($user, $data['device_name'] ?? null);
     }
 
