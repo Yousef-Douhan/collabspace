@@ -48,8 +48,8 @@
                             <div class="flex items-center justify-between">
                                 <x-avatars :users="$task->assignees->reject(fn ($u) => $u->pivot->is_reviewer)" />
                                 <div class="flex items-center gap-3 text-[11px] text-slate-500">
-                                    <span title="{{ __('Comments') }}">💬 {{ $task->comments_count }}</span>
-                                    <span @class(['text-rose-600 font-medium' => $task->isOverdue()])>📅 {{ $task->due_date?->translatedFormat('M d') ?? '—' }}</span>
+                                    <span class="inline-flex items-center gap-1" title="{{ __('Comments') }}"><x-icon name="message" size="3.5" />{{ $task->comments_count }}</span>
+                                    <span @class(['inline-flex items-center gap-1', 'text-rose-600 font-medium' => $task->isOverdue()])><x-icon name="calendar" size="3.5" />{{ $task->due_date?->translatedFormat('M d') ?? '—' }}</span>
                                 </div>
                             </div>
                         </article>

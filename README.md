@@ -1,208 +1,279 @@
+<div align="center">
+
 # CollabSpace
 
-A team-collaboration workspace — projects, Kanban tasks, chat, meetings with AI summaries, reports and an AI assistant — built with **Laravel 13** for the Huma-volve CollabSpace challenge (Figma: *Collabpspace, Team C*).
+**A team-collaboration workspace: projects, Kanban, chat, meetings with AI summaries, reports and an AI assistant.**
 
-The same business logic powers two front ends:
+Built with Laravel 13 for the **Huma-volve CollabSpace Challenge** · Figma: *Collabpspace, Team C*
 
-- a **REST API** (`/api/v1`, Sanctum tokens) with a ready-to-import Postman collection, and
-- a **Blade web app** (session auth) that follows the Figma design, in **English and Arabic (RTL)**.
+![PHP](https://img.shields.io/badge/PHP-8.4-777BB4?logo=php&logoColor=white)
+![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
+![Alpine.js](https://img.shields.io/badge/Alpine.js-3-8BC0D0?logo=alpinedotjs&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-93_passing-2EA44F)
+![i18n](https://img.shields.io/badge/i18n-English_%7C_Arabic_(RTL)-0B5FFF)
 
-> **بالعربية:** منصة تعاون للفرق، فيها إدارة مشاريع، ولوحة مهام Kanban بالسحب والإفلات، ومحادثات، واجتماعات مع تقويم أسبوعي وملخص بالذكاء الاصطناعي، وتقارير ورسوم بيانية، ومساعد ذكي يجيب من بيانات المشروع. الواجهة تعمل بالعربية والإنجليزية، ويُبدَّل بينهما بزر في الشريط العلوي. البناء بـ Laravel 13، وفيه REST API موثّق وواجهة Blade، و91 اختباراً آلياً.
+[Overview](#-overview) · [Features](#-features) · [Screenshots](#-screenshots) · [Quick start](#-quick-start) · [API](#-rest-api) · [Architecture](#-architecture) · [Testing](#-testing)
 
-![Dashboard](docs/screenshots/dashboard.png)
+<img src="docs/screenshots/dashboard.png" alt="CollabSpace dashboard" width="100%">
 
----
-
-## Features
-
-| Area | What you can do |
-|---|---|
-| **Dashboard** | Task stats with month-over-month change, 6-month project chart, active projects, recent files, priority tasks, team workload, upcoming meetings, quick Ask AI |
-| **Projects** | Create projects, filter and sort them, track completion %, manage members and roles (owner / manager / member), edit a Markdown wiki |
-| **Tasks** | Kanban board (To-do → In Progress → In Review → Completed) with drag & drop, priorities, tracks, assignees and a reviewer, progress, due dates with overdue highlighting, comments, attachments |
-| **Files** | Private uploads per project or task, downloads only for members (files are never public) |
-| **Chats** | Direct messages and group or project channels, attachments, edit and delete your own messages, read receipts (✓ / ✓✓), unread counters, pin and archive per user |
-| **Meetings** | Weekly calendar, scheduling with attendees, Accept or Decline, reminders, shared notes, comments, attachments, transcript search, **AI summary and key points** generated from the transcript |
-| **Reports** | KPIs (task completion, project completion, team activity), charts, per-project and per-member tables, saved reports, CSV export |
-| **Ask AI** | A chat assistant that answers from the user's **own visible data** (projects, tasks, meetings), in English or Arabic |
-| **Notifications** | Task assigned, task overdue, meeting invitation and meeting reminder, both in-app and through the API |
-| **Profiles** | Member pages (completed tasks, hours worked, recent activity), settings, avatar, password change |
-| **i18n** | Full Arabic translation and right-to-left layout, Arabic dates and validation messages; the API honours `Accept-Language: ar` |
-
-### Screenshots
-
-| Kanban (Arabic, RTL) | Meeting with AI summary |
-|---|---|
-| ![Kanban](docs/screenshots/kanban-ar.png) | ![Meeting](docs/screenshots/meeting-ai-summary.png) |
-| **Weekly calendar** | **Reports** |
-| ![Calendar](docs/screenshots/meetings-calendar-ar.png) | ![Reports](docs/screenshots/reports-ar.png) |
-| **Ask AI** | **Projects** |
-| ![Ask AI](docs/screenshots/ask-ai.png) | ![Projects](docs/screenshots/projects-ar.png) |
+</div>
 
 ---
 
-## Tech stack
+## 📌 Overview
 
-- **Backend:** PHP 8.3+ (tested on 8.4), Laravel 13, Sanctum 4, MySQL / MariaDB (SQLite for tests)
-- **Frontend:** Blade components, Tailwind CSS 4, Alpine.js, SortableJS (Kanban), Chart.js, Vite 8
-- **AI:** pluggable provider — Google Gemini (default), OpenAI or Anthropic — called over plain HTTP
+CollabSpace gives a team one place to plan work, talk, meet and see progress. One Laravel codebase serves two clients:
+
+| Client | Auth | Purpose |
+|---|---|---|
+| **Blade web app** | Session | The full UI from the Figma design, in English and Arabic (RTL) |
+| **REST API** `/api/v1` | Sanctum tokens | For mobile and SPA clients. Ships with a 71-request Postman collection |
+
+Both clients go through the **same Form Requests, Policies and Services**, so validation, permissions and business rules are defined once.
+
+> **نبذة بالعربية:** منصة تعاون للفرق، فيها إدارة المشاريع، ولوحة مهام Kanban بالسحب والإفلات، ومحادثات مع علامات القراءة، واجتماعات بتقويم أسبوعي وملخص بالذكاء الاصطناعي، وتقارير ورسوم بيانية، ومساعد ذكي يجيب من بيانات الفريق. الواجهة كاملة بالعربية والإنجليزية مع دعم الكتابة من اليمين لليسار، ومعها REST API موثّق و93 اختباراً آلياً.
 
 ---
 
-## Getting started
+## ✨ Features
 
-### Requirements
+### Work management
 
-PHP 8.3+, Composer 2, Node 20+ and npm, and MySQL 8 or MariaDB 10.6+.
+- **Projects:** status, priority, start and deadline dates, live completion %, members with roles (owner, manager, member), and a Markdown wiki.
+- **Kanban tasks:** drag & drop across *To-do → In Progress → In Review → Completed*. Tasks have priorities, tracks (UI/UX, Front End, Back End, Graphic Design), assignees and a reviewer, progress, estimated hours, due dates with overdue highlighting, comments and attachments.
+- **Files:** private per-project and per-task storage. Downloads are allowed only for members.
 
-### Installation
+### Communication
+
+- **Chats:** direct messages and group or project channels, attachments, editing and deleting your own messages, read receipts ✓ / ✓✓, unread counters, and pin or archive per user. Open threads update live every few seconds, with no page reload.
+- **Meetings:** a weekly calendar, scheduling with attendees and reminders, Accept or Decline, shared notes, comments, attachments and transcript search.
+- **Notifications:** task assigned, task overdue, meeting invitation and meeting reminder, in the app and through the API.
+
+### Intelligence & insight
+
+- **🤖 Ask AI:** a chat assistant that answers questions about the user's own projects, tasks and meetings, in English or Arabic.
+- **✨ Meeting AI summary:** one click turns the transcript into a summary and key points.
+- **Dashboard:** stats with month-over-month change, a 6-month activity chart, workload per member and upcoming meetings.
+- **Reports:** completion and activity KPIs, three charts, per-project and per-member tables, saved reports and CSV export.
+
+### Platform
+
+- **Bilingual UI:** a one-click English ⇄ العربية switch with a full right-to-left layout, Arabic dates, Arabic validation messages and Arabic chart axes.
+- **Profiles:** completed tasks, hours worked, recent activity, avatar, and a password change.
+
+---
+
+## 🖼 Screenshots
+
+<table>
+  <tr>
+    <td width="50%"><b>Kanban board</b>: Arabic, RTL<br><img src="docs/screenshots/kanban-ar.png" alt="Kanban board"></td>
+    <td width="50%"><b>Meeting</b>: AI summary and key points<br><img src="docs/screenshots/meeting-ai-summary.png" alt="Meeting AI summary"></td>
+  </tr>
+  <tr>
+    <td><b>Weekly calendar</b><br><img src="docs/screenshots/meetings-calendar-ar.png" alt="Weekly calendar"></td>
+    <td><b>Reports</b><br><img src="docs/screenshots/reports-ar.png" alt="Reports"></td>
+  </tr>
+  <tr>
+    <td><b>Ask AI</b>: answers from workspace data<br><img src="docs/screenshots/ask-ai.png" alt="Ask AI"></td>
+    <td><b>Projects</b><br><img src="docs/screenshots/projects-ar.png" alt="Projects"></td>
+  </tr>
+</table>
+
+---
+
+## 🚀 Quick start
+
+**Requirements:** PHP 8.3+, Composer 2, Node 20+, and MySQL 8 or MariaDB 10.6+.
 
 ```bash
 git clone https://github.com/Yousef-Douhan/collabspace.git
 cd collabspace
 
-composer install
-npm install
+composer install && npm install
+cp .env.example .env && php artisan key:generate
 
-cp .env.example .env
-php artisan key:generate
-```
-
-Set your database in `.env`:
-
-```env
-DB_CONNECTION=mysql
-DB_DATABASE=collabspace
-DB_USERNAME=root
-DB_PASSWORD=
-```
-
-Then create the tables and the demo data, and build the assets:
-
-```bash
+# set DB_DATABASE / DB_USERNAME / DB_PASSWORD in .env, then:
 php artisan migrate --seed
 php artisan storage:link
 npm run build
 php artisan serve
 ```
 
-Open <http://127.0.0.1:8000>.
+Open **http://127.0.0.1:8000** and sign in with `admin@collabspace.test` / `password`.
 
-During development, run `npm run dev` next to `php artisan serve` so CSS and JS changes appear instantly.
+During development, run `npm run dev` next to `php artisan serve` so CSS and JS changes reload instantly.
 
 ### Demo accounts
 
-All demo accounts use the password **`password`**.
+Every account uses the password **`password`**.
 
-| Email | Role |
-|---|---|
-| `admin@collabspace.test` | Admin (Yousef Douhan, Team Lead): sees every project |
-| `lina@collabspace.test` | Manager (UI/UX Designer) |
-| `omar@collabspace.test` | Member (Frontend Developer) |
-| `sara@collabspace.test` | Member (Backend Developer) |
-| `ahmad@collabspace.test` | Member (Graphic Designer) |
+| Email | Name | Role | Track |
+|---|---|---|---|
+| `admin@collabspace.test` | Yousef Douhan | Admin, sees all projects | Back End |
+| `lina@collabspace.test` | Lina Haddad | Manager | UI/UX |
+| `omar@collabspace.test` | Omar Khaled | Member | Front End |
+| `sara@collabspace.test` | Sara Nasser | Member | Back End |
+| `ahmad@collabspace.test` | Ahmad Saleh | Member | Graphic Design |
 
-The seeder creates 2 projects, 9 tasks (one of them overdue), real files, 3 conversations and a meeting with a transcript, so every screen has data.
+The seeder fills every screen with data: 2 projects, 9 tasks (one of them overdue), real files, 3 conversations and a meeting with a transcript and notes.
 
-### AI setup (optional)
+### AI configuration (optional)
 
-Ask AI and meeting summaries need an API key. Everything else works without one. Add these lines to `.env`:
+Ask AI and meeting summaries need a provider key. The rest of the app works without one.
 
 ```env
-AI_PROVIDER=gemini          # gemini | openai | anthropic
+AI_PROVIDER=gemini        # gemini | openai | anthropic
 AI_API_KEY=your-key-here
-AI_MODEL=                   # optional; defaults to gemini-3.5-flash for Gemini
+AI_MODEL=                 # optional, default for Gemini: gemini-3.5-flash
 ```
 
-A free Gemini key is available from [Google AI Studio](https://aistudio.google.com/). Never commit `.env`.
+A free Gemini key is available from [Google AI Studio](https://aistudio.google.com/).
 
-### Scheduled jobs
+### Scheduler
 
-Meeting reminders run every minute, and overdue-task notifications run daily at 09:00:
+Two scheduled jobs run in the background:
 
-```bash
-php artisan schedule:work      # development
-```
+| Command | Schedule | Purpose |
+|---|---|---|
+| `meetings:send-reminders` | every minute | Notify attendees before a meeting starts |
+| `tasks:notify-overdue` | daily 09:00 | Notify assignees of overdue tasks |
 
-In production, add a cron entry that runs `php artisan schedule:run` every minute.
+Run `php artisan schedule:work` locally. In production, use a cron entry that calls `schedule:run` every minute.
 
 ---
 
-## Tests
+## 🔌 REST API
+
+| | |
+|---|---|
+| **Base URL** | `/api/v1` |
+| **Auth** | `POST /auth/login` returns a token; send it as `Authorization: Bearer <token>` |
+| **Language** | `Accept-Language: ar` returns Arabic labels and messages |
+| **Errors** | Always JSON: `401`, `403`, `404`, `422` (with field errors), `429`, `503` (AI) |
+| **Postman** | [`docs/postman/CollabSpace.postman_collection.json`](docs/postman/CollabSpace.postman_collection.json) |
+| **Full reference** | [`docs/DESIGN.md`](docs/DESIGN.md), covering every endpoint and the database schema |
+
+Example requests:
+
+```bash
+# Login
+curl -X POST http://127.0.0.1:8000/api/v1/auth/login \
+     -H "Accept: application/json" \
+     -d "email=admin@collabspace.test" -d "password=password"
+
+# Move a task on the Kanban board
+curl -X PATCH http://127.0.0.1:8000/api/v1/tasks/5/move \
+     -H "Authorization: Bearer <token>" -H "Accept: application/json" \
+     -d "status=in_review" -d "position=0"
+```
+
+<details>
+<summary><b>Endpoint groups</b></summary>
+
+| Group | Highlights |
+|---|---|
+| `auth`, `profile` | register, login, logout, me, profile update, avatar, password |
+| `users` | team directory with filters, member profile and stats |
+| `projects` | CRUD, members and roles, wiki |
+| `tasks` | CRUD, board view, `move` (Kanban), reviewer, comments, filters (`mine`, `overdue`) |
+| `files` | upload, private download, delete |
+| `conversations` | direct and channel chats, messages, edit and delete, read receipts, pin and archive |
+| `meetings` | CRUD, RSVP, notes, attachments, comments, **AI summary** |
+| `ai` | `ask`, history |
+| `dashboard`, `reports`, `search` | aggregates, KPIs and charts, CSV export, global search |
+| `notifications`, `meta` | list, read, read-all; enums for client dropdowns |
+
+</details>
+
+**Postman tip:** run **Login** first. It stores the token, and every request that creates something stores its ID in a collection variable, so the collection runs top to bottom.
+
+---
+
+## 🏗 Architecture
+
+```
+        ┌─────────────────────────┐     ┌─────────────────────────┐
+        │  API controllers (v1)   │     │  Web controllers (Blade) │
+        └────────────┬────────────┘     └────────────┬────────────┘
+                     └──────────────┬────────────────┘
+                   Form Requests  ·  Policies     ← shared validation & authorization
+                                    │
+                                 Services         ← shared business logic
+         Project · Task · File · Chat · Meeting · Dashboard · Report
+         AiService (provider-agnostic) · AiAssistant · ActivityLogger
+                                    │
+                Eloquent models + visibleTo() scopes  →  MySQL
+```
+
+### Design decisions
+
+| Decision | Why |
+|---|---|
+| **Thin controllers, shared Services** | The API and the web app cannot drift apart. A rule changes in one place. |
+| **`visibleTo($user)` scopes** | One definition of what a user can see. The AI assistant builds its context through the same scopes, so it never sees another team's data. |
+| **Contiguous Kanban positions** | A move re-numbers both columns inside one database transaction, so the order stays consistent. |
+| **Private `local` disk for files** | Nothing is publicly reachable. Every download passes a policy check. |
+| **Provider-agnostic `AiService`** | Switching between Gemini, OpenAI and Anthropic is an `.env` change. Failures surface as a clean `503`. |
+| **Backed enums with translated labels** | Type-safe statuses and priorities, the same labels in the UI and the API, and Arabic for free. |
+| **`SetLocale` middleware** | Picks the language from API `Accept-Language`, then the session, then the user's saved preference. |
+
+### Project structure
+
+```
+app/
+├── Enums/                    TaskStatus, Priority, Track, roles … (+ EnumHelpers)
+├── Http/
+│   ├── Controllers/Api/V1/   REST controllers
+│   ├── Controllers/Web/      Blade controllers
+│   ├── Middleware/           SetLocale
+│   ├── Requests/             Form Requests (shared)
+│   └── Resources/            API Resources
+├── Models/  Policies/  Services/  Notifications/  Console/Commands/
+lang/                         ar.json + ar/*.php (validation, auth, pagination)
+resources/
+├── views/                    pages + components (layouts, modal, stat-card, avatar…)
+└── js/app.js                 Alpine: kanban (SortableJS), chart (Chart.js)
+docs/                         DESIGN.md · UI_SPEC.md · Postman · screenshots
+tests/Feature/                Api/ · Web/
+```
+
+---
+
+## 🧪 Testing
 
 ```bash
 php artisan test
 ```
 
-**91 tests, all passing.** They run on in-memory SQLite and fake every AI call, so no API key or database setup is needed.
+**93 tests, all passing.** The suite runs on in-memory SQLite and fakes every AI call, so it needs no database or API key.
 
-| Suite | Covers |
+| Suite | Coverage |
 |---|---|
-| `tests/Feature/Api/*` | Auth, projects, members, tasks and Kanban ordering, files, chats and receipts, meetings and reminders, AI, notifications, dashboard, reports, search, permissions |
-| `tests/Feature/Web/WebPagesTest` | Every Blade page renders; login and logout; Kanban move; forms; access control |
-| `tests/Feature/Web/LocaleTest` | Language switching, Arabic RTL on every page, Arabic validation, API `Accept-Language` |
-| `tests/Feature/DatabaseSeederTest` | The demo data is consistent |
+| `Feature/Api/*` (14 files) | Auth, projects and roles, tasks and Kanban ordering, files, chats and receipts, meetings and reminders, AI, notifications, dashboard, reports, search, and permission boundaries |
+| `Feature/Web/WebPagesTest` | Every Blade page renders; login and logout; Kanban move; forms; live chat polling; access control |
+| `Feature/Web/LocaleTest` | Language switching, RTL on every page, Arabic validation, API `Accept-Language` |
+| `Feature/DatabaseSeederTest` | The demo workspace is consistent |
 
 ---
 
-## REST API
+## 🛠 Tech stack
 
-- **Base URL:** `/api/v1`
-- **Authentication:** `Authorization: Bearer <token>`. Get a token from `POST /api/v1/auth/login`.
-- **Postman:** import [`docs/postman/CollabSpace.postman_collection.json`](docs/postman/CollabSpace.postman_collection.json). It has 71 requests. The **Login** request saves the token automatically, and the IDs are kept in collection variables, so you can run the requests in order.
-- **Full endpoint list and database schema:** [`docs/DESIGN.md`](docs/DESIGN.md).
-
-Main groups: `auth`, `profile`, `users`, `projects` (members, wiki), `tasks` (board, move, reviewer, comments), `files`, `conversations` (messages, read, pin and archive), `meetings` (RSVP, notes, attachments, AI summary), `notifications`, `ai/ask`, `dashboard`, `reports` (+ CSV), `search`, `meta`.
-
-Errors are always JSON: `401`, `403`, `404`, `422` with field errors, and `503` for AI failures.
-
----
-
-## Architecture
-
-```
-HTTP (API controllers  |  Web controllers)
-        │                      │
-        ├──── Form Requests ───┤   validation (shared)
-        ├──── Policies ────────┤   authorization (shared)
-        ▼                      ▼
-              Services                business logic (shared)
-   ProjectService · TaskService · FileService · ChatService
-   MeetingService · DashboardService · ReportService
-   AiService (provider-agnostic) · AiAssistant · ActivityLogger
-        │
-     Eloquent models + visibleTo() scopes  →  MySQL
-```
-
-- **Thin controllers.** API and web controllers only translate HTTP into a Service call. Both front ends share the same validation, authorization and logic, so they can't drift apart.
-- **Visibility in one place.** `Project::visibleTo($user)` (and the matching scopes on tasks, files and meetings) is the single rule for what a user can see. The AI assistant reads its context through the same scopes, so it can never leak another team's data.
-- **Kanban ordering.** Positions stay contiguous inside each column. Moving a card re-numbers both columns in a single transaction.
-- **Private files.** Uploads go to the non-public `local` disk and are streamed only after a policy check.
-- **Typed domain.** PHP backed enums (status, priority, track, roles) with translated labels.
-- **Localization.** `SetLocale` middleware picks the language in this order: API `Accept-Language`, then the session, then the user's saved locale. Translations live in `lang/ar.json` and `lang/ar/*.php`, and the layout switches `dir="rtl"` and the Arabic font.
-
-### Project layout
-
-```
-app/
-  Enums/                 status, priority, track, roles… (+ EnumHelpers)
-  Http/Controllers/Api/V1/   REST controllers
-  Http/Controllers/Web/      Blade controllers
-  Http/Middleware/SetLocale.php
-  Http/Requests/         Form Requests (shared)
-  Http/Resources/        API Resources
-  Models/  Policies/  Services/  Notifications/  Console/Commands/
-lang/ar.json, lang/ar/   Arabic translations
-resources/views/         Blade pages and components (layouts, modal, stat-card, avatar…)
-resources/js/app.js      Alpine components: kanban (SortableJS), chart (Chart.js)
-docs/                    DESIGN.md, UI_SPEC.md, Postman collection, screenshots
-tests/Feature/           Api/, Web/
-```
+| Layer | Technology |
+|---|---|
+| Backend | PHP 8.4 · Laravel 13 · Sanctum 4 · Eloquent · Notifications · Scheduler |
+| Database | MySQL / MariaDB (SQLite for tests) |
+| Frontend | Blade components · Tailwind CSS 4 · Alpine.js · SortableJS · Chart.js · Vite 8 |
+| AI | Google Gemini (default) · OpenAI · Anthropic, called over plain HTTP |
+| Tooling | PHPUnit · Postman |
 
 ---
 
-## Author
+<div align="center">
 
-**Yousef Douhan**, Backend Developer (Laravel) · [GitHub](https://github.com/Yousef-Douhan)
+**Yousef Douhan**, Backend Developer (Laravel)
 
-Built for the Huma-volve CollabSpace challenge, November 2026.
+[GitHub](https://github.com/Yousef-Douhan) · Built for the Huma-volve CollabSpace Challenge, November 2026
+
+</div>

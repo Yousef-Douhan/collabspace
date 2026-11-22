@@ -60,5 +60,41 @@ Alpine.data('chart', (config) => ({
     },
 }));
 
+/**
+ * <div x-data="chatThread(pollUrl)">: keeps a chat thread live by polling every 4 s.
+ * New messages, edits, deletions and read receipts appear without a page reload.
+ * Pauses while the tab is hidden or the user is editing one of their messages.
+ */
+Alpine.data('chatThread', (url) => ({
+    html: null,
+    timer: null,
+    init() {
+        this.$nextTick(() => this.scrollToBottom());
+        this.timer = setInterval(() => this.refresh(), 4000);
+    },
+    destroy() {
+        clearInterval(this.timer);
+    },
+    nearBottom() {
+        return this.$el.scrollHeight - this.$el.scrollTop - this.$el.clientHeight < 80;
+    },
+    scrollToBottom() {
+        this.$el.scrollTop = this.$el.scrollHeight;
+    },
+    async refresh() {
+        if (document.hidden || this.$el.contains(document.activeElement)) return;
+        try {
+            const { html } = await window.api(url);
+            if (html === this.html) return;
+            const stick = this.html === null || this.nearBottom();
+            this.html = html;
+            this.$el.innerHTML = html;
+            if (stick) this.$nextTick(() => this.scrollToBottom());
+        } catch {
+            // Network hiccup or session expired: try again on the next tick.
+        }
+    },
+}));
+
 window.Alpine = Alpine;
 Alpine.start();

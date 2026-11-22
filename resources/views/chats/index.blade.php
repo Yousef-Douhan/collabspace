@@ -22,7 +22,7 @@
                         @endif
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center justify-between gap-2">
-                                <span class="truncate text-sm font-medium">{{ $c->pivot->is_pinned ? '📌 ' : '' }}{{ $c->displayNameFor($me) }}</span>
+                                <span class="truncate text-sm font-medium">@if ($c->pivot->is_pinned)<x-icon name="pin" size="3" class="me-1 inline text-brand" />@endif{{ $c->displayNameFor($me) }}</span>
                                 <span class="shrink-0 text-[11px] text-slate-400">{{ $c->latestMessage?->created_at?->translatedFormat('H:i') }}</span>
                             </div>
                             <div class="flex items-center justify-between gap-2">
@@ -58,57 +58,23 @@
                     </form>
                 </header>
 
-                <div class="min-h-0 flex-1 space-y-3 overflow-y-auto bg-slate-50/60 px-6 py-5" x-init="$el.scrollTop = $el.scrollHeight">
-                    @forelse ($messages as $m)
-                        @php $mine = $m->sender_id === $me->id; @endphp
-                        <div @class(['flex gap-2', 'flex-row-reverse' => $mine]) x-data="{ editing: false }">
-                            @unless ($mine)<x-avatar :user="$m->sender" size="8" />@endunless
-                            <div @class(['group max-w-[70%]', 'text-end' => $mine])>
-                                @unless ($mine)<div class="mb-0.5 text-[11px] text-slate-500">{{ $m->sender->name }}</div>@endunless
-                                <div x-show="!editing" @class(['inline-block rounded-2xl px-4 py-2 text-start text-sm', 'bg-brand text-white rounded-ee-md' => $mine, 'bg-white shadow-sm rounded-es-md' => ! $mine])>
-                                    @if ($m->body)<p dir="auto" class="whitespace-pre-line">{{ $m->body }}</p>@endif
-                                    @if ($m->attachment_path)
-                                        <a href="{{ route('messages.attachment', $m) }}" @class(['mt-1 flex items-center gap-2 rounded-xl px-3 py-2 text-xs', 'bg-white/15' => $mine, 'bg-slate-100' => ! $mine])>📎 {{ $m->attachment_name }}</a>
-                                    @endif
-                                </div>
-                                @if ($mine)
-                                    <form x-cloak x-show="editing" method="POST" action="{{ route('messages.update', $m) }}" class="flex gap-2">
-                                        @csrf @method('PATCH')
-                                        <input name="body" value="{{ $m->body }}" class="input text-sm" required>
-                                        <button class="btn-primary px-3 text-xs">{{ __('Save') }}</button>
-                                        <button type="button" @click="editing = false" class="btn-ghost px-3 text-xs">✕</button>
-                                    </form>
-                                @endif
-                                <div class="mt-0.5 flex items-center gap-2 text-[10px] text-slate-400 {{ $mine ? 'justify-end' : '' }}">
-                                    <span>{{ $m->created_at->translatedFormat('H:i') }}</span>
-                                    @if ($m->edited_at)<span>{{ __('· edited') }}</span>@endif
-                                    @if ($mine)
-                                        <span title="{{ $m->readers->isNotEmpty() ? __('Seen by :names', ['names' => $m->readers->pluck('name')->implode(', ')]) : __('Sent') }}" @class(['text-brand' => $m->readers->isNotEmpty()])>{{ $m->readers->isNotEmpty() ? '✓✓' : '✓' }}</span>
-                                        @if ($m->body)<button @click="editing = true" class="hidden group-hover:inline">{{ __('Edit') }}</button>@endif
-                                        <form method="POST" action="{{ route('messages.destroy', $m) }}" class="hidden group-hover:inline" onsubmit="return confirm(@js(__('Delete this message?')))">
-                                            @csrf @method('DELETE')<button class="text-rose-500">{{ __('Delete') }}</button>
-                                        </form>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                    @empty
-                        <x-empty>{{ __('Say hello 👋') }}</x-empty>
-                    @endforelse
+                <div class="min-h-0 flex-1 space-y-3 overflow-y-auto bg-slate-50/60 px-6 py-5"
+                     x-data="chatThread(@js(route('chats.poll', $conversation)))">
+                    @include('chats._messages')
                 </div>
 
                 <form method="POST" action="{{ route('chats.send', $conversation) }}" enctype="multipart/form-data" class="flex items-center gap-2 border-t border-slate-100 p-4" x-data="{ file: '' }">
                     @csrf
-                    <label class="cursor-pointer rounded-full p-2 text-slate-400 hover:bg-slate-100" title="{{ __('Attach') }}">📎
+                    <label class="cursor-pointer rounded-full p-2 text-slate-400 hover:bg-slate-100" title="{{ __('Attach') }}"><x-icon name="paperclip" size="5" />
                         <input type="file" name="attachment" class="hidden" @change="file = $event.target.files[0]?.name">
                     </label>
                     <span x-cloak x-show="file" x-text="file" class="max-w-32 truncate text-xs text-slate-500"></span>
                     <input name="body" dir="auto" autocomplete="off" placeholder="{{ __('Type a message…') }}" class="input rounded-full" autofocus>
-                    <button class="btn-primary shrink-0 whitespace-nowrap">{{ __('Send ➤') }}</button>
+                    <button class="btn-primary inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">{{ __('Send') }} <x-icon name="send" size="3.5" class="rtl:-scale-x-100" /></button>
                 </form>
             @else
                 <div class="flex flex-1 flex-col items-center justify-center text-center text-slate-400">
-                    <span class="mb-2 text-4xl">💬</span>
+                    <span class="mb-3 flex size-14 items-center justify-center rounded-2xl bg-brand-50 text-brand"><x-icon name="message" size="7" /></span>
                     <p class="text-sm">{{ __('Select a conversation to start chatting.') }}</p>
                 </div>
             @endif

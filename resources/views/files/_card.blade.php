@@ -14,11 +14,11 @@
         <a href="{{ route('files.download', $file) }}" class="block truncate text-sm font-medium hover:text-brand" title="{{ $file->original_name }}">{{ $file->original_name }}</a>
         <div class="truncate text-xs text-slate-500">{{ $file->formatted_size }} · {{ $file->project?->name }} · {{ $file->created_at->diffForHumans() }}</div>
     </div>
-    <a href="{{ route('files.download', $file) }}" class="rounded-full p-2 text-slate-400 hover:bg-slate-100" title="{{ __('Download') }}">⬇</a>
+    <a href="{{ route('files.download', $file) }}" class="rounded-full p-2 text-slate-400 hover:bg-slate-100" title="{{ __('Download') }}"><x-icon name="download" /></a>
     @can('delete', $file)
         <form method="POST" action="{{ route('files.destroy', $file) }}" onsubmit="return confirm(@js(__('Delete this file?')))">
             @csrf @method('DELETE')
-            <button class="rounded-full p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600" title="{{ __('Delete') }}">🗑</button>
+            <button class="rounded-full p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600" title="{{ __('Delete') }}"><x-icon name="trash" /></button>
         </form>
     @endcan
 </div>

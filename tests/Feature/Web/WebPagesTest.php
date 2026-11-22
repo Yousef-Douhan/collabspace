@@ -130,6 +130,31 @@ class WebPagesTest extends TestCase
         $this->assertDatabaseHas('messages', ['body' => 'Hello from Blade', 'sender_id' => $this->admin->id]);
     }
 
+    public function test_chat_poll_returns_new_messages_and_marks_read(): void
+    {
+        $conversation = $this->admin->conversations()->with('participants')->firstOrFail();
+        $other = $conversation->participants->firstWhere('id', '!=', $this->admin->id);
+
+        $conversation->messages()->create(['sender_id' => $other->id, 'body' => 'Polled hello']);
+
+        $this->actingAs($this->admin)
+            ->getJson(route('chats.poll', $conversation))
+            ->assertOk()
+            ->assertJsonStructure(['html', 'last_id'])
+            ->assertSee('Polled hello');
+
+        $this->assertNotNull($conversation->participants()->whereKey($this->admin->id)->first()->pivot->last_read_at);
+    }
+
+    public function test_outsiders_cannot_poll_a_conversation(): void
+    {
+        $conversation = $this->admin->conversations()->firstOrFail();
+
+        $this->actingAs(User::factory()->create())
+            ->getJson(route('chats.poll', $conversation))
+            ->assertForbidden();
+    }
+
     public function test_outsiders_cannot_open_a_private_project(): void
     {
         $outsider = User::factory()->create();

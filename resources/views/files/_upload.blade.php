@@ -13,7 +13,7 @@
         @isset($taskId)<input type="hidden" name="task_id" value="{{ $taskId }}">@endisset
         <label class="flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 p-8 text-center text-sm text-slate-500 hover:border-brand"
                x-data="{ name: '' }">
-            <span class="text-2xl">☁</span>
+            <x-icon name="upload" size="8" class="text-brand" />
             <span x-text="name || @js(__('Click to choose a file (max 20 MB)'))"></span>
             <input type="file" name="file" required class="hidden" @change="name = $event.target.files[0]?.name">
         </label>

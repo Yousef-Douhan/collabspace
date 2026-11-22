@@ -10,8 +10,10 @@ use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
 use App\Services\ChatService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -39,17 +41,8 @@ class ChatController extends Controller
             Gate::authorize('view', $conversation);
             $conversation->load('participants');
 
-            $messages = $conversation->messages()->with('sender')->latest('id')->limit(60)->get()->reverse()->values();
-
-            // Read receipts: participants (other than the sender) whose last_read_at is past the message.
-            $readers = $conversation->participants;
-            foreach ($messages as $m) {
-                $m->readers = $readers->filter(fn (User $u) => $u->id !== $m->sender_id
-                    && $u->pivot->last_read_at !== null
-                    && $u->pivot->last_read_at >= $m->created_at->toDateTimeString());
-            }
-
             $this->chats->markRead($user, $conversation);
+            $messages = $this->threadMessages($conversation);
         }
 
         return view('chats.index', [
@@ -59,6 +52,38 @@ class ChatController extends Controller
             'messages' => $messages,
             'users' => User::whereKeyNot($user->id)->orderBy('name')->get(['id', 'name']),
         ]);
+    }
+
+    /**
+     * GET /chats/{conversation}/poll — the thread's message list as HTML, polled by the page
+     * every few seconds so new messages, edits and read receipts appear without a reload.
+     */
+    public function poll(Request $request, Conversation $conversation): JsonResponse
+    {
+        Gate::authorize('view', $conversation);
+
+        $this->chats->markRead($request->user(), $conversation);
+        $messages = $this->threadMessages($conversation->load('participants'));
+
+        return response()->json([
+            'html' => view('chats._messages', ['messages' => $messages])->render(),
+            'last_id' => $messages->last()?->id,
+        ]);
+    }
+
+    /** Last 60 messages, oldest first, each with `readers` (participants who have seen it). */
+    private function threadMessages(Conversation $conversation): Collection
+    {
+        $messages = $conversation->messages()->with('sender')->latest('id')->limit(60)->get()->reverse()->values();
+        $readers = $conversation->participants;
+
+        foreach ($messages as $m) {
+            $m->readers = $readers->filter(fn (User $u) => $u->id !== $m->sender_id
+                && $u->pivot->last_read_at !== null
+                && $u->pivot->last_read_at >= $m->created_at->toDateTimeString());
+        }
+
+        return $messages;
     }
 
     public function store(StoreConversationRequest $request): RedirectResponse

@@ -3,7 +3,7 @@
         <x-slot:subtitle>
             <div class="mt-1 text-sm text-slate-500">{{ $meeting->starts_at->translatedFormat('l, M d') }} · <span dir="ltr">{{ $meeting->starts_at->format('H:i') }}–{{ $meeting->ends_at->format('H:i') }}</span>
                 @if ($meeting->project) · <a href="{{ route('projects.show', $meeting->project) }}" class="text-brand">{{ $meeting->project->name }}</a>@endif
-                @if ($meeting->location) · 📍 {{ $meeting->location }}@endif
+                @if ($meeting->location) · <x-icon name="map-pin" size="3.5" class="inline align-[-2px]" /> {{ $meeting->location }}@endif
             </div>
         </x-slot:subtitle>
         @if ($meeting->meeting_link)<a href="{{ $meeting->meeting_link }}" target="_blank" rel="noopener" class="btn-primary">{{ __('Join ↗') }}</a>@endif
@@ -33,7 +33,7 @@
             @if ($tab === 'summary')
                 <div class="card p-5">
                     <div class="mb-3 flex items-center justify-between">
-                        <h2 class="font-semibold">{{ __('✨ AI Summary') }}</h2>
+                        <h2 class="flex items-center gap-2 font-semibold"><x-icon name="sparkles" class="text-amber-500" />{{ __('AI Summary') }}</h2>
                         @if ($canSummarize && $meeting->transcript)
                             <form method="POST" action="{{ route('meetings.summarize', $meeting) }}">@csrf
                                 <button class="btn-ghost text-xs">{{ $meeting->ai_summary ? 'Regenerate' : 'Generate summary' }}</button>
@@ -122,7 +122,7 @@
                 <h2 class="mb-3 font-semibold">{{ __('Attachments') }}</h2>
                 @forelse ($meeting->attachments as $att)
                     <div class="flex items-center gap-2 py-1.5 text-sm">
-                        <a href="{{ route('meetings.attachments.download', $att) }}" class="min-w-0 flex-1 truncate hover:text-brand">📎 {{ $att->original_name }}</a>
+                        <a href="{{ route('meetings.attachments.download', $att) }}" class="min-w-0 flex-1 truncate hover:text-brand"><x-icon name="paperclip" size="3.5" class="me-1 inline" />{{ $att->original_name }}</a>
                         @if ($att->uploaded_by === auth()->id() || $canEdit)
                             <form method="POST" action="{{ route('meetings.attachments.destroy', $att) }}">@csrf @method('DELETE')<button class="text-xs text-rose-500">✕</button></form>
                         @endif

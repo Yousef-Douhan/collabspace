@@ -6,7 +6,7 @@
 <div class="card p-5">
     <div class="flex items-start justify-between">
         <span class="text-sm font-medium text-slate-700">{{ __($label) }}</span>
-        @if ($icon)<span class="{{ $iconTone }} rounded-lg p-1.5 text-xs">{{ $icon }}</span>@endif
+        @if ($icon)<span class="{{ $iconTone }} rounded-lg p-1.5"><x-icon :name="$icon" /></span>@endif
     </div>
     <div class="mt-2 flex items-baseline gap-2">
         <span class="text-3xl font-semibold">{{ $value }}</span>

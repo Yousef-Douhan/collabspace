@@ -41,7 +41,7 @@
                             <x-avatar :user="$c->user" />
                             <div class="flex-1 rounded-2xl bg-slate-50 px-4 py-2.5">
                                 <div class="text-xs"><span class="font-semibold">{{ $c->user->name }}</span> <span class="text-slate-400">· {{ $c->created_at->diffForHumans() }}</span></div>
-                                <p class="mt-1 whitespace-pre-line text-sm">{{ $c->body }}</p>
+                                <p dir="auto" class="mt-1 whitespace-pre-line text-sm">{{ $c->body }}</p>
                             </div>
                         </div>
                     @empty

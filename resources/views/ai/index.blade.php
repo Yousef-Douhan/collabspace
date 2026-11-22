@@ -1,7 +1,7 @@
 <x-layouts.app :title="__('Ask AI')">
     <div class="card mx-auto flex h-[calc(100vh-9rem)] min-h-[520px] max-w-3xl flex-col overflow-hidden">
         <header class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-            <h1 class="font-semibold">{{ __('🤖 Ask AI') }}</h1>
+            <h1 class="flex items-center gap-2 font-semibold"><x-icon name="bot" size="5" class="text-brand" />{{ __('Ask AI') }}</h1>
             @if ($messages->isNotEmpty())
                 <form method="POST" action="{{ route('ai.clear') }}" onsubmit="return confirm(@js(__('Clear the conversation?')))">@csrf @method('DELETE')
                     <button class="text-xs text-slate-500 hover:text-rose-600">{{ __('Clear chat') }}</button>
@@ -15,7 +15,7 @@
                     <div class="flex justify-end"><p dir="auto" class="max-w-[75%] whitespace-pre-line rounded-2xl rounded-ee-md bg-brand px-4 py-2 text-sm text-white">{{ $m->content }}</p></div>
                 @else
                     <div class="flex gap-2">
-                        <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-50">✨</span>
+                        <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand"><x-icon name="sparkles" /></span>
                         <div dir="auto" class="prose-chat max-w-[80%] rounded-2xl rounded-es-md bg-slate-50 px-4 py-2.5 text-sm">{!! \Illuminate\Support\Str::markdown($m->content, ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}</div>
                     </div>
                 @endif
@@ -40,7 +40,7 @@
             @error('message')<p class="mb-2 text-xs text-rose-600">{{ $message }}</p>@enderror
             <div class="flex gap-2">
                 <input name="message" value="{{ old('message') }}" required maxlength="1000" dir="auto" autocomplete="off" autofocus placeholder="{{ __('Ask me anything…') }}" class="input rounded-full">
-                <button class="btn-primary shrink-0 whitespace-nowrap" :disabled="busy"><span x-show="!busy">{{ __('Send ➤') }}</span><span x-cloak x-show="busy">{{ __('Thinking…') }}</span></button>
+                <button class="btn-primary shrink-0 whitespace-nowrap" :disabled="busy"><span x-show="!busy" class="inline-flex items-center gap-1.5">{{ __('Send') }} <x-icon name="send" size="3.5" class="rtl:-scale-x-100" /></span><span x-cloak x-show="busy">{{ __('Thinking…') }}</span></button>
             </div>
         </form>
     </div>

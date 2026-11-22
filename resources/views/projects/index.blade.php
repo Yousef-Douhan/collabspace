@@ -37,7 +37,7 @@
                 @forelse ($projects as $p)
                     <tr class="cursor-pointer hover:bg-slate-50" onclick="location='{{ route('projects.show', $p) }}'">
                         <td class="px-5 py-3.5 font-medium">
-                            <span class="me-2 inline-block rounded-md bg-violet-50 px-1.5 text-violet-600">▣</span>{{ $p->name }}
+                            <span class="me-2 inline-flex rounded-md bg-violet-50 p-1 align-middle text-violet-600"><x-icon name="folder" size="3.5" /></span>{{ $p->name }}
                         </td>
                         <td class="px-5 py-3.5 text-slate-600">{{ $p->start_date?->format('Y-m-d') ?? '—' }}</td>
                         <td class="px-5 py-3.5 text-slate-600">{{ $p->end_date?->format('Y-m-d') ?? '—' }}</td>
@@ -47,7 +47,7 @@
                         <td class="w-36 px-5 py-3.5">
                             <div class="flex items-center gap-2"><x-progress :value="$p->completion_percentage" /><span class="text-xs text-slate-500">{{ $p->completion_percentage }}%</span></div>
                         </td>
-                        <td class="px-5 py-3.5 text-slate-600">📄 {{ trans_choice(':count File|:count Files', $p->files_count) }}</td>
+                        <td class="px-5 py-3.5 text-slate-600"><x-icon name="file" size="3.5" class="me-1 inline align-[-2px]" />{{ trans_choice(':count File|:count Files', $p->files_count) }}</td>
                         <td class="px-5 py-3.5"><x-avatars :users="$p->members" /></td>
                         <td class="px-5 py-3.5"><x-priority :value="$p->priority" /></td>
                     </tr>

@@ -16,13 +16,13 @@
 <x-layouts.app :title="__('Dashboard')">
     {{-- Stat cards --}}
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <x-stat-card label="Pending Tasks" :value="$s['todo']" :change="$c['todo']" icon="⏳" tone="amber"
+        <x-stat-card label="Pending Tasks" :value="$s['todo']" :change="$c['todo']" icon="hourglass" tone="amber"
                      :progress="$s['total'] ? $s['todo'] / $s['total'] * 100 : 0" :progress-label="$s['todo'].'/'.$s['total']" />
-        <x-stat-card label="In Progress" :value="$s['in_progress']" :change="$c['in_progress']" icon="⚙" tone="brand"
+        <x-stat-card label="In Progress" :value="$s['in_progress']" :change="$c['in_progress']" icon="loader" tone="brand"
                      :progress="$s['total'] ? $s['in_progress'] / $s['total'] * 100 : 0" :progress-label="$s['in_progress'].'/'.$s['total']" />
-        <x-stat-card label="Completed" :value="$s['completed']" :change="$c['completed']" icon="✓" tone="emerald"
+        <x-stat-card label="Completed" :value="$s['completed']" :change="$c['completed']" icon="check-circle" tone="emerald"
                      :progress="$s['total'] ? $s['completed'] / $s['total'] * 100 : 0" :progress-label="$s['completed'].'/'.$s['total']" />
-        <x-stat-card label="Completion Rate" :value="$s['completion_rate'].'%'" :change="$c['completion_rate_points']" suffix=" pts" icon="◔" tone="violet" />
+        <x-stat-card label="Completion Rate" :value="$s['completion_rate'].'%'" :change="$c['completion_rate_points']" suffix=" pts" icon="pie" tone="violet" />
     </div>
 
     <div class="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-4">
@@ -85,7 +85,7 @@
                             <div class="truncate font-medium">{{ $f['name'] }}</div>
                             <div class="text-xs text-slate-500">{{ $f['project'] }} · {{ $f['size'] }}</div>
                         </div>
-                        <a href="{{ route('files.download', $f['id']) }}" class="text-slate-400 hover:text-brand" title="{{ __('Download') }}">⤓</a>
+                        <a href="{{ route('files.download', $f['id']) }}" class="text-slate-400 hover:text-brand" title="{{ __('Download') }}"><x-icon name="download" /></a>
                     </div>
                 @empty
                     <x-empty>{{ __('No files yet.') }}</x-empty>
@@ -161,13 +161,13 @@
         <div class="card flex flex-col p-5">
             <h2 class="font-semibold">{{ __('Ask AI') }}</h2>
             <div class="flex flex-1 flex-col items-center justify-center py-6 text-center">
-                <span class="mb-2 text-3xl">🤖</span>
+                <span class="mb-3 flex size-12 items-center justify-center rounded-2xl bg-brand-50 text-brand"><x-icon name="bot" size="6" /></span>
                 <p class="text-sm text-slate-500">{{ __('ask me anything about…') }}</p>
             </div>
             <form method="POST" action="{{ route('ai.ask') }}" class="rounded-2xl bg-slate-50 p-3">
                 @csrf
                 <textarea name="message" rows="2" required dir="auto" placeholder="ما المهام المتأخرة؟" class="w-full resize-none bg-transparent text-sm outline-none"></textarea>
-                <div class="text-end"><button class="btn-primary px-3 py-1 text-xs">{{ __('Send ➤') }}</button></div>
+                <div class="text-end"><button class="btn-primary inline-flex items-center gap-1.5 px-3 py-1 text-xs">{{ __('Send') }} <x-icon name="send" size="3.5" class="rtl:-scale-x-100" /></button></div>
             </form>
         </div>
     </div>
