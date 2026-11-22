@@ -52,6 +52,7 @@ return [
     'same' => 'يجب أن يتطابق :attribute مع :other.',
     'string' => 'يجب أن يكون :attribute نصاً.',
     'unique' => ':attribute مستخدم من قبل.',
+    'uploaded' => 'حجم :attribute أكبر من المسموح للرفع (حد الخادم '.ini_get('upload_max_filesize').').',
     'url' => 'يجب أن يكون :attribute رابطاً صحيحاً.',
 
     'custom' => [],
