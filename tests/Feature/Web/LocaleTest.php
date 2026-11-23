@@ -17,7 +17,7 @@ class LocaleTest extends TestCase
 
     public function test_guest_can_switch_to_arabic(): void
     {
-        $this->get(route('locale.switch', 'ar'))->assertRedirect();
+        $this->from(route('login'))->post(route('locale.switch'), ['locale' => 'ar'])->assertRedirect(route('login'));
 
         $this->get(route('login'))
             ->assertOk()
@@ -27,14 +27,26 @@ class LocaleTest extends TestCase
 
     public function test_unknown_locale_is_rejected(): void
     {
-        $this->get('/locale/de')->assertNotFound();
+        $this->post(route('locale.switch'), ['locale' => 'de'])->assertNotFound();
+    }
+
+    public function test_switching_is_a_form_post_with_no_followable_link(): void
+    {
+        $this->get('/locale/ar')->assertNotFound();
+        $this->get(route('login'))->assertSee('name="locale" value="ar"', false)->assertDontSee('/locale/ar', false);
+    }
+
+    public function test_switching_never_redirects_off_site(): void
+    {
+        $this->post(route('locale.switch'), ['locale' => 'fr'], ['referer' => 'https://evil.example/phish'])
+            ->assertRedirect(route('dashboard'));
     }
 
     public function test_choice_is_saved_on_the_account(): void
     {
         $user = User::factory()->create(['locale' => 'en']);
 
-        $this->actingAs($user)->get(route('locale.switch', 'ar'));
+        $this->actingAs($user)->post(route('locale.switch'), ['locale' => 'ar']);
 
         $this->assertSame('ar', $user->fresh()->locale);
     }
@@ -75,7 +87,7 @@ class LocaleTest extends TestCase
 
     public function test_validation_messages_are_arabic(): void
     {
-        $this->get(route('locale.switch', 'ar'));
+        $this->post(route('locale.switch'), ['locale' => 'ar']);
 
         $this->post(route('login'), ['email' => '', 'password' => ''])
             ->assertSessionHasErrors(['email' => 'حقل البريد الإلكتروني مطلوب.']);

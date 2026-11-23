@@ -23,13 +23,18 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Language switch (guests: session only; signed-in users: saved on the account too).
-Route::get('locale/{locale}', function (Request $request, string $locale) {
+// A POST form, not a GET link: nothing for crawlers to follow, and the redirect only ever
+// goes back to a page of this site.
+Route::post('language', function (Request $request) {
+    $locale = (string) $request->input('locale');
     abort_unless(in_array($locale, SetLocale::SUPPORTED, true), 404);
 
     $request->session()->put('locale', $locale);
     $request->user()?->update(['locale' => $locale]);
 
-    return back();
+    $back = url()->previous();
+
+    return redirect()->to(str_starts_with($back, url('/').'/') || $back === url('/') ? $back : route('dashboard'));
 })->name('locale.switch');
 
 Route::middleware('guest')->group(function () {

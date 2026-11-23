@@ -24,7 +24,10 @@
             <button type="button" @click="open = !open" class="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs text-slate-600 hover:border-brand hover:text-brand">{{ $languages[app()->getLocale()] ?? 'English' }} ▾</button>
             <div x-cloak x-show="open" class="absolute end-0 z-40 mt-2 w-36 rounded-2xl border border-slate-100 bg-white p-2 shadow-lg">
                 @foreach ($languages as $code => $name)
-                    <a href="{{ route('locale.switch', $code) }}" @class(['block rounded-lg px-3 py-2 text-sm hover:bg-slate-50', 'font-semibold text-brand' => app()->getLocale() === $code])>{{ $name }}</a>
+                    <form method="POST" action="{{ route('locale.switch') }}">
+                        @csrf
+                        <button type="submit" name="locale" value="{{ $code }}" @class(['block w-full rounded-lg px-3 py-2 text-start text-sm hover:bg-slate-50', 'font-semibold text-brand' => app()->getLocale() === $code])>{{ $name }}</button>
+                    </form>
                 @endforeach
             </div>
         </div>

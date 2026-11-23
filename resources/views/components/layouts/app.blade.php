@@ -90,9 +90,12 @@
                 </button>
                 <div x-cloak x-show="open" x-transition.opacity class="absolute end-0 z-40 mt-2 w-40 rounded-2xl border border-slate-100 bg-white p-2 shadow-lg">
                     @foreach ($languages as $code => $name)
-                        <a href="{{ route('locale.switch', $code) }}" class="flex items-center justify-between rounded-lg px-3 py-2 text-sm hover:bg-slate-50">
-                            {{ $name }} @if (app()->getLocale() === $code)<x-icon name="check-circle" class="text-emerald-500" />@endif
-                        </a>
+                        <form method="POST" action="{{ route('locale.switch') }}">
+                            @csrf
+                            <button type="submit" name="locale" value="{{ $code }}" class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-start text-sm hover:bg-slate-50">
+                                {{ $name }} @if (app()->getLocale() === $code)<x-icon name="check-circle" class="text-emerald-500" />@endif
+                            </button>
+                        </form>
                     @endforeach
                 </div>
             </div>
