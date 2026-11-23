@@ -112,7 +112,7 @@ class ChatController extends Controller
         Gate::authorize('update', $message);
 
         $data = $request->validate(['body' => ['required', 'string', 'max:5000']]);
-        $message->update(['body' => $data['body'], 'edited_at' => now()]);
+        $this->chats->edit($message, $data['body']);
 
         return back();
     }
@@ -121,10 +121,7 @@ class ChatController extends Controller
     {
         Gate::authorize('delete', $message);
 
-        if ($message->attachment_path) {
-            Storage::disk(ChatService::DISK)->delete($message->attachment_path);
-        }
-        $message->delete();
+        $this->chats->remove($message);
 
         return back();
     }

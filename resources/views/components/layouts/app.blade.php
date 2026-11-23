@@ -68,6 +68,13 @@
                 </div>
             </form>
 
+            {{-- Real-time status: shown only while the Reverb WebSocket is connected --}}
+            <span x-data="{ on: false }" x-init="window.onRealtimeState?.((v) => (on = v))" x-cloak x-show="on" x-transition.opacity
+                  class="hidden items-center gap-1.5 whitespace-nowrap rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700 lg:inline-flex" title="{{ __('Real-time updates are on') }}">
+                <span class="relative flex size-2"><span class="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex size-2 rounded-full bg-emerald-500"></span></span>
+                {{ __('Live') }}
+            </span>
+
             {{-- Language menu (Figma: Language overlay) --}}
             @php $languages = ['en' => 'English', 'ar' => 'العربية', 'fr' => 'Français']; @endphp
             <div x-data="{ open: false }" class="relative" @click.outside="open = false">
@@ -154,5 +161,14 @@
 
         {{ $slot }}
     </main>
+
+    {{-- Real-time toasts (e.g. "Sara moved a task") --}}
+    <div x-data="{ toasts: [], push(text) { const id = Date.now() + Math.random(); this.toasts.push({ id, text }); setTimeout(() => this.toasts = this.toasts.filter((t) => t.id !== id), 3500); } }"
+         @realtime-toast.window="push($event.detail)"
+         class="pointer-events-none fixed bottom-5 end-5 z-50 flex flex-col items-end gap-2 print:hidden">
+        <template x-for="t in toasts" :key="t.id">
+            <div x-transition class="toast-in rounded-xl bg-ink px-4 py-2.5 text-sm text-white shadow-lg"><span class="me-1">⚡</span><span x-text="t.text"></span></div>
+        </template>
+    </div>
 </body>
 </html>

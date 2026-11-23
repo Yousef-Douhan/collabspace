@@ -31,8 +31,16 @@
         </form>
     </x-page-header>
 
-    <div x-data="kanban" class="stagger grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div x-data="kanban(@js([
+            'projects' => $projects->pluck('id'),
+            'labels' => ['moved' => __(':name moved a task'), 'deleted' => __(':name deleted a task'), 'changed' => __(':name updated the board')],
+        ]))" class="stagger grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <p x-cloak x-show="error" x-text="error" class="col-span-full rounded-xl bg-rose-50 px-4 py-2 text-sm text-rose-700"></p>
+        {{-- Someone else created / edited a task (Reverb): offer a refresh instead of reshuffling under the user --}}
+        <div x-cloak x-show="notice" x-transition class="col-span-full flex items-center justify-between gap-3 rounded-xl border border-brand-100 bg-brand-50 px-4 py-2 text-sm text-brand-700">
+            <span><span class="me-1">⚡</span><span x-text="notice"></span></span>
+            <button type="button" @click="window.location.reload()" class="btn-primary px-3 py-1 text-xs">{{ __('Refresh') }}</button>
+        </div>
 
         @foreach ($meta as $status => [$label, $tone])
             <section class="flex min-h-40 flex-col rounded-3xl bg-white/60 p-2">

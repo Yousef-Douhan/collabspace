@@ -4,13 +4,16 @@ namespace App\Services;
 
 use App\Enums\AttachmentType;
 use App\Enums\ConversationType;
+use App\Events\ConversationUpdated;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
+use App\Support\Realtime;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ChatService
@@ -87,7 +90,29 @@ class ChatService
         $conversation->touch();                 // bubbles the chat to the top of the list
         $this->markRead($sender, $conversation); // your own message is never "unread"
 
+        Realtime::dispatch(new ConversationUpdated($conversation->id, ConversationUpdated::SENT, $message->id, $sender->id));
+
         return $message;
+    }
+
+    public function edit(Message $message, string $body): Message
+    {
+        $message->update(['body' => $body, 'edited_at' => now()]);
+
+        Realtime::dispatch(new ConversationUpdated($message->conversation_id, ConversationUpdated::EDITED, $message->id, $message->sender_id));
+
+        return $message;
+    }
+
+    /** Delete a message together with its stored attachment. */
+    public function remove(Message $message): void
+    {
+        if ($message->attachment_path) {
+            Storage::disk(self::DISK)->delete($message->attachment_path);
+        }
+        $message->delete();
+
+        Realtime::dispatch(new ConversationUpdated($message->conversation_id, ConversationUpdated::DELETED, $message->id, $message->sender_id));
     }
 
     public function markRead(User $user, Conversation $conversation): void

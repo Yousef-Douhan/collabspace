@@ -424,5 +424,12 @@
     "العربية": "العربية",
     "— None —": "— لا أحد —",
     "✨ AI Summary": "✨ ملخص الذكاء الاصطناعي",
-    "🤖 Ask AI": "🤖 اسأل الذكاء الاصطناعي"
+    "🤖 Ask AI": "🤖 اسأل الذكاء الاصطناعي",
+    "is typing…": "يكتب الآن…",
+    ":name moved a task": "نقل :name مهمة",
+    ":name deleted a task": "حذف :name مهمة",
+    ":name updated the board": "حدّث :name اللوحة",
+    "Refresh": "تحديث",
+    "Live": "مباشر",
+    "Real-time updates are on": "التحديثات الفورية تعمل"
 }

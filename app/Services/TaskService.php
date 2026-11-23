@@ -3,10 +3,12 @@
 namespace App\Services;
 
 use App\Enums\TaskStatus;
+use App\Events\TaskBoardUpdated;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use App\Notifications\TaskAssigned;
+use App\Support\Realtime;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
@@ -20,7 +22,7 @@ class TaskService
      */
     public function create(User $creator, Project $project, array $data): Task
     {
-        return DB::transaction(function () use ($creator, $project, $data) {
+        $task = DB::transaction(function () use ($creator, $project, $data) {
             $status = TaskStatus::from($data['status'] ?? TaskStatus::Todo->value);
 
             $task = new Task(Arr::except($data, ['assignees', 'project_id', 'reviewer_id']));
@@ -44,11 +46,15 @@ class TaskService
 
             return $task;
         });
+
+        Realtime::dispatch(new TaskBoardUpdated($task, TaskBoardUpdated::CREATED, $creator->name));
+
+        return $task;
     }
 
     public function update(User $actor, Task $task, array $data): Task
     {
-        return DB::transaction(function () use ($actor, $task, $data) {
+        $task = DB::transaction(function () use ($actor, $task, $data) {
             $newStatus = isset($data['status']) ? TaskStatus::from($data['status']) : null;
 
             // A status change through a normal update behaves like a move to the end of that column.
@@ -72,6 +78,10 @@ class TaskService
 
             return $task;
         });
+
+        Realtime::dispatch(new TaskBoardUpdated($task, TaskBoardUpdated::UPDATED, $actor->name));
+
+        return $task;
     }
 
     /**
@@ -80,7 +90,7 @@ class TaskService
      */
     public function move(User $actor, Task $task, TaskStatus $status, ?int $position, bool $log = true): Task
     {
-        return DB::transaction(function () use ($actor, $task, $status, $position, $log) {
+        $task = DB::transaction(function () use ($actor, $task, $status, $position, $log) {
             $oldStatus = $task->status;
             $column = fn (TaskStatus $s) => Task::where('project_id', $task->project_id)
                 ->where('status', $s)
@@ -108,6 +118,13 @@ class TaskService
 
             return $task;
         });
+
+        // A move made inside update() is announced once, by update() itself.
+        if ($log) {
+            Realtime::dispatch(new TaskBoardUpdated($task, TaskBoardUpdated::MOVED, $actor->name));
+        }
+
+        return $task;
     }
 
     public function delete(User $actor, Task $task): void
@@ -122,6 +139,8 @@ class TaskService
         });
 
         $this->activity->log($actor, 'task.deleted', "deleted task \"{$task->title}\"", $task, $task->project);
+
+        Realtime::dispatch(new TaskBoardUpdated($task, TaskBoardUpdated::DELETED, $actor->name));
     }
 
     /** One reviewer per task: stored on the task_user pivot (is_reviewer). */

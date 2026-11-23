@@ -102,6 +102,11 @@ nav a, .tab { transition: color .2s ease, background-color .25s ease, border-col
 .is-dragging { transform: rotate(2.5deg) !important; }
 .drop-pop { animation: cs-pop .35s ease; }
 
+/* Real-time: a card moved by someone else glows briefly; toasts slide in */
+@keyframes cs-flash { 0% { box-shadow: 0 0 0 0 rgb(59 130 246 / .55); } 100% { box-shadow: 0 0 0 12px rgb(59 130 246 / 0); } }
+.remote-flash { animation: cs-pop .35s ease, cs-flash 1.2s ease-out; }
+.toast-in { animation: cs-slide-in .25s ease both; }
+
 /* Chat: the newest message slides in */
 .msg-in { animation: cs-slide-in .3s ease both; }
 

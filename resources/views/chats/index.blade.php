@@ -58,9 +58,16 @@
                     </form>
                 </header>
 
-                <div class="min-h-0 flex-1 space-y-3 overflow-y-auto bg-slate-50/60 px-6 py-5"
-                     x-data="chatThread(@js(route('chats.poll', $conversation)))">
-                    @include('chats._messages')
+                <div class="min-h-0 flex-1 overflow-y-auto bg-slate-50/60 px-6 py-5"
+                     x-data="chatThread(@js(['url' => route('chats.poll', $conversation), 'channel' => 'conversation.'.$conversation->id, 'me' => ['id' => $me->id, 'name' => $me->name]]))">
+                    <div x-ref="messages" class="space-y-3">
+                        @include('chats._messages')
+                    </div>
+                    {{-- Live typing indicator (Reverb whispers) --}}
+                    <div x-cloak x-show="typingText" x-transition.opacity class="mt-3 flex items-center gap-2 text-xs text-slate-500">
+                        <span class="inline-flex items-center gap-1 rounded-2xl bg-white px-3 py-2 text-slate-400 shadow-sm"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></span>
+                        <span><span x-text="typingText" class="font-medium text-slate-600"></span> {{ __('is typing…') }}</span>
+                    </div>
                 </div>
 
                 <form method="POST" action="{{ route('chats.send', $conversation) }}" enctype="multipart/form-data" class="flex items-center gap-2 border-t border-slate-100 p-4" x-data="{ file: '' }">
@@ -69,7 +76,7 @@
                         <input type="file" name="attachment" class="hidden" @change="file = $event.target.files[0]?.name">
                     </label>
                     <span x-cloak x-show="file" x-text="file" class="max-w-32 truncate text-xs text-slate-500"></span>
-                    <input name="body" dir="auto" autocomplete="off" placeholder="{{ __('Type a message…') }}" class="input rounded-full" autofocus>
+                    <input name="body" dir="auto" autocomplete="off" placeholder="{{ __('Type a message…') }}" class="input rounded-full" autofocus @input="$dispatch('chat-typing')">
                     <button class="btn-primary inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">{{ __('Send') }} <x-icon name="send" size="3.5" class="rtl:-scale-x-100" /></button>
                 </form>
             @else

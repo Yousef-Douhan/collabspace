@@ -424,5 +424,12 @@
     "العربية": "العربية",
     "— None —": "— Aucun —",
     "✨ AI Summary": "✨ Résumé IA",
-    "🤖 Ask AI": "🤖 Demander à l'IA"
+    "🤖 Ask AI": "🤖 Demander à l'IA",
+    "is typing…": "est en train d’écrire…",
+    ":name moved a task": ":name a déplacé une tâche",
+    ":name deleted a task": ":name a supprimé une tâche",
+    ":name updated the board": ":name a mis à jour le tableau",
+    "Refresh": "Actualiser",
+    "Live": "En direct",
+    "Real-time updates are on": "Les mises à jour en temps réel sont actives"
 }
