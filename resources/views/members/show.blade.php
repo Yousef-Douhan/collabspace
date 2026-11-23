@@ -15,7 +15,7 @@
         @endif
     </div>
 
-    <div class="mb-5 grid grid-cols-1 gap-4 md:grid-cols-3">
+    <div class="stagger mb-5 grid grid-cols-1 gap-4 md:grid-cols-3">
         <x-stat-card label="Completed Tasks" :value="$completed" icon="check-circle" tone="emerald" :progress="$tasks->count() ? $completed / $tasks->count() * 100 : 0" :progress-label="$completed.'/'.$tasks->count()" />
         <x-stat-card label="Hours Worked" :value="$hours.' h'" icon="clock" tone="brand" />
         <x-stat-card label="Projects" :value="$projects->count()" icon="folder" tone="violet" />

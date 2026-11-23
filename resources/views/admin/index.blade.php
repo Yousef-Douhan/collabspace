@@ -21,7 +21,7 @@
 
     @include('admin._tabs')
 
-    <div class="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="stagger mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <x-stat-card label="Users" :value="$u['total']" icon="users" tone="brand"
                      :progress="$u['total'] ? $u['active'] / $u['total'] * 100 : 0" :progress-label="__(':n active', ['n' => $u['active']])" />
         <x-stat-card label="Projects" :value="$p['total']" icon="folder" tone="violet"
@@ -31,7 +31,7 @@
         <x-stat-card label="Overdue" :value="$t['overdue']" icon="clock" tone="amber" />
     </div>
 
-    <div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
+    <div class="stagger grid grid-cols-1 gap-5 lg:grid-cols-3">
         <div class="card p-5">
             <h2 class="mb-3 font-semibold">{{ __('Users by role') }}</h2>
             <div class="h-56"><canvas x-data="chart(@js($roleChart))"></canvas></div>

@@ -35,7 +35,7 @@
             </thead>
             <tbody class="divide-y divide-slate-50">
                 @forelse ($projects as $p)
-                    <tr class="cursor-pointer hover:bg-slate-50" onclick="location='{{ route('projects.show', $p) }}'">
+                    <tr class="cursor-pointer transition-colors hover:bg-brand-50/40" onclick="location='{{ route('projects.show', $p) }}'">
                         <td class="px-5 py-3.5 font-medium">
                             <span class="me-2 inline-flex rounded-md bg-violet-50 p-1 align-middle text-violet-600"><x-icon name="folder" size="3.5" /></span>{{ $p->name }}
                         </td>

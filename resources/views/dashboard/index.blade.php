@@ -15,7 +15,7 @@
 @endphp
 <x-layouts.app :title="__('Dashboard')">
     {{-- Stat cards --}}
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="stagger grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <x-stat-card label="Pending Tasks" :value="$s['todo']" :change="$c['todo']" icon="hourglass" tone="amber"
                      :progress="$s['total'] ? $s['todo'] / $s['total'] * 100 : 0" :progress-label="$s['todo'].'/'.$s['total']" />
         <x-stat-card label="In Progress" :value="$s['in_progress']" :change="$c['in_progress']" icon="loader" tone="brand"
@@ -25,7 +25,7 @@
         <x-stat-card label="Completion Rate" :value="$s['completion_rate'].'%'" :change="$c['completion_rate_points']" suffix=" pts" :gauge="$s['completion_rate']" tone="violet" />
     </div>
 
-    <div class="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-4">
+    <div class="stagger mt-5 grid grid-cols-1 gap-5 xl:grid-cols-4">
         {{-- Project overview chart --}}
         <div class="card p-5 xl:col-span-2">
             <div class="mb-3 flex items-center justify-between">
@@ -55,7 +55,7 @@
             </div>
             <div class="space-y-3">
                 @forelse ($d['active_projects'] as $p)
-                    <a href="{{ route('projects.show', $p['id']) }}" class="block rounded-xl border border-slate-100 p-3 hover:bg-slate-50">
+                    <a href="{{ route('projects.show', $p['id']) }}" class="lift block rounded-xl border border-slate-100 p-3 hover:bg-slate-50">
                         <div class="mb-2 flex items-center justify-between text-sm">
                             <span class="font-medium">{{ $p['name'] }}</span>
                             <span class="text-xs text-slate-500">{{ $p['completion_percentage'] }}%</span>
@@ -109,7 +109,7 @@
             </div>
             <div class="max-h-96 space-y-3 overflow-y-auto pe-1">
                 @forelse ($d['priority_tasks'] as $t)
-                    <a href="{{ route('tasks.show', $t['id']) }}" class="block rounded-xl border border-slate-100 p-3 hover:bg-slate-50">
+                    <a href="{{ route('tasks.show', $t['id']) }}" class="lift block rounded-xl border border-slate-100 p-3 hover:bg-slate-50">
                         <div class="flex items-start justify-between gap-2">
                             <span class="text-sm font-medium">{{ $t['title'] }}</span>
                             <x-priority :value="$t['priority']" />
@@ -169,7 +169,7 @@
             </div>
             <div class="space-y-3">
                 @forelse ($d['upcoming_meetings'] as $m)
-                    <a href="{{ route('meetings.show', $m['id']) }}" class="block rounded-xl border border-slate-100 p-3 hover:bg-slate-50">
+                    <a href="{{ route('meetings.show', $m['id']) }}" class="lift block rounded-xl border border-slate-100 p-3 hover:bg-slate-50">
                         @php $start = \Illuminate\Support\Carbon::parse($m['starts_at']); @endphp
                         <div class="flex items-start justify-between gap-2">
                             <span class="text-sm font-medium">{{ $m['title'] }}</span>
@@ -193,7 +193,7 @@
         <div class="card flex flex-col p-5">
             <h2 class="font-semibold">{{ __('Ask AI') }}</h2>
             <div class="flex flex-1 flex-col items-center justify-center py-6 text-center">
-                <span class="mb-3 flex size-12 items-center justify-center rounded-2xl bg-brand-50 text-brand"><x-icon name="bot" size="6" /></span>
+                <span class="float mb-3 flex size-12 items-center justify-center rounded-2xl bg-brand-50 text-brand"><x-icon name="bot" size="6" /></span>
                 <p class="text-sm text-slate-500">{{ __('ask me anything about…') }}</p>
             </div>
             <form method="POST" action="{{ route('ai.ask') }}" class="rounded-2xl bg-slate-50 p-3">

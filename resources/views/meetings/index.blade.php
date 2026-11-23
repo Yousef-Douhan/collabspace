@@ -57,7 +57,7 @@
         <aside class="card h-fit p-5">
             <h2 class="mb-3 font-semibold">{{ __('Upcoming') }}</h2>
             @forelse ($upcoming as $m)
-                <a href="{{ route('meetings.show', $m) }}" class="mb-2 block rounded-xl border border-slate-100 p-3 hover:bg-slate-50">
+                <a href="{{ route('meetings.show', $m) }}" class="lift mb-2 block rounded-xl border border-slate-100 p-3 hover:bg-slate-50">
                     <div class="text-sm font-medium">{{ $m->title }}</div>
                     <div class="text-xs text-slate-500">{{ $m->starts_at->translatedFormat('D, M d · H:i') }}</div>
                 </a>

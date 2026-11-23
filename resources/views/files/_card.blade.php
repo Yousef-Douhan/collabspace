@@ -8,7 +8,7 @@
         default => 'bg-slate-100 text-slate-600',
     };
 @endphp
-<div class="card flex items-center gap-3 p-4">
+<div class="card lift flex items-center gap-3 p-4">
     <span class="{{ $tone }} flex size-11 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold uppercase">{{ $ext ?: 'file' }}</span>
     <div class="min-w-0 flex-1">
         <a href="{{ route('files.download', $file) }}" class="block truncate text-sm font-medium hover:text-brand" title="{{ $file->original_name }}">{{ $file->original_name }}</a>

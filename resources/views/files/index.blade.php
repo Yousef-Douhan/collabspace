@@ -4,7 +4,7 @@
     </x-page-header>
 
     <h2 class="mb-3 font-semibold">{{ __('Recent Files') }}</h2>
-    <div class="mb-8 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+    <div class="stagger mb-8 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
         @forelse ($recent as $file)
             @include('files._card')
         @empty
@@ -22,7 +22,7 @@
             </select>
         </form>
     </div>
-    <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+    <div class="stagger grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
         @forelse ($files as $file)
             @include('files._card')
         @empty

@@ -86,12 +86,12 @@
             {{-- Notifications dropdown --}}
             <div x-data="{ open: false }" class="relative">
                 <button @click="open = !open" class="relative rounded-full p-2 hover:bg-slate-100" aria-label="Notifications">
-                    <svg class="size-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                    <svg @class(["size-5", "bell-ring" => $unread]) fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
                     @if ($unread)
-                        <span class="absolute end-1 top-1 size-2 rounded-full bg-rose-500"></span>
+                        <span class="absolute end-1 top-1 flex size-2"><span class="absolute inline-flex size-full animate-ping rounded-full bg-rose-400 opacity-75"></span><span class="relative inline-flex size-2 rounded-full bg-rose-500"></span></span>
                     @endif
                 </button>
-                <div x-cloak x-show="open" @click.outside="open = false" x-transition
+                <div x-cloak x-show="open" @click.outside="open = false" x-transition.origin.top
                      class="absolute end-0 mt-2 w-80 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
                     <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
                         <span class="text-sm font-semibold">{{ __('Notifications') }}</span>
@@ -123,7 +123,7 @@
                     </span>
                     <x-avatar :user="$user" size="9" />
                 </button>
-                <div x-cloak x-show="open" @click.outside="open = false" x-transition
+                <div x-cloak x-show="open" @click.outside="open = false" x-transition.origin.top
                      class="absolute end-0 mt-2 w-48 overflow-hidden rounded-2xl border border-slate-200 bg-white py-1 shadow-xl">
                     <a href="{{ route('members.show', $user) }}" class="block px-4 py-2 text-sm hover:bg-slate-50">{{ __('My profile') }}</a>
                     <a href="{{ route('settings.edit') }}" class="block px-4 py-2 text-sm hover:bg-slate-50">{{ __('Settings') }}</a>
@@ -143,6 +143,7 @@
     <main class="mx-auto max-w-[1360px] px-6 py-8">
         @if (session('status'))
             <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
+                 x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2"
                  class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{{ session('status') }}</div>
         @endif
         @if ($errors->any())

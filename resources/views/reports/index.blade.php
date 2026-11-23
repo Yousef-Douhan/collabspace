@@ -35,13 +35,13 @@
         </form>
     </x-page-header>
 
-    <div class="mb-5 grid grid-cols-1 gap-4 md:grid-cols-3">
+    <div class="stagger mb-5 grid grid-cols-1 gap-4 md:grid-cols-3">
         <x-stat-card label="Task Completion Rate" :value="$k['task_completion_rate']['value'].'%'" :change="$k['task_completion_rate']['change_points']" suffix=" pts" icon="check-circle" tone="emerald" />
         <x-stat-card label="Project Completion Rate" :value="$k['project_completion_rate']['value'].'%'" icon="folder" tone="brand" />
         <x-stat-card label="Team Activity Rate" :value="$k['team_activity_rate']['value'].'%'" :change="$k['team_activity_rate']['change_points']" suffix=" pts" icon="zap" tone="violet" />
     </div>
 
-    <div class="mb-5 grid grid-cols-1 gap-4 lg:grid-cols-3">
+    <div class="stagger mb-5 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div class="card p-5">
             <h2 class="mb-3 font-semibold">{{ __('Task Completion Time vs Deadline') }}</h2>
             <div class="h-56"><canvas x-data="chart(@js($deadline))"></canvas></div>

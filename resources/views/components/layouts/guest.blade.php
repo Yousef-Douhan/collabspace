@@ -26,7 +26,7 @@
         </div>
     </div>
     <div class="flex min-h-[75vh] items-center justify-center px-4">
-        <div class="w-full max-w-md rounded-3xl bg-white p-10 shadow-xl shadow-slate-200/60">
+        <div class="rise w-full max-w-md rounded-3xl bg-white p-10 shadow-xl shadow-slate-200/60">
             {{ $slot }}
         </div>
     </div>

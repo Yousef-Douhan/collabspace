@@ -2,7 +2,7 @@
 @php $me = auth()->user(); @endphp
 @forelse ($messages as $m)
     @php $mine = $m->sender_id === $me->id; @endphp
-    <div @class(['flex gap-2', 'flex-row-reverse' => $mine]) x-data="{ editing: false }">
+    <div @class(['flex gap-2', 'flex-row-reverse' => $mine, 'msg-in' => $loop->last]) x-data="{ editing: false }">
         @unless ($mine)<x-avatar :user="$m->sender" size="8" />@endunless
         <div @class(['group max-w-[70%]', 'text-end' => $mine])>
             @unless ($mine)<div class="mb-0.5 text-[11px] text-slate-500">{{ $m->sender->name }}</div>@endunless

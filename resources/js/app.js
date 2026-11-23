@@ -18,12 +18,24 @@ window.api = async (url, { method = 'GET', body } = {}) => {
 /** Kanban board: each column is a Sortable list; dropping a card calls PATCH /tasks/{id}/move. */
 Alpine.data('kanban', () => ({
     error: null,
+    /** Keep the little counters in the column headers right after a move. */
+    recount() {
+        this.$el.querySelectorAll('[data-column]').forEach((column) => {
+            const badge = column.closest('section')?.querySelector('[data-count]');
+            if (badge) badge.textContent = column.querySelectorAll('[data-task]').length;
+        });
+    },
     init() {
         this.$el.querySelectorAll('[data-column]').forEach((column) => {
             Sortable.create(column, {
                 group: 'tasks',
-                animation: 150,
-                ghostClass: 'opacity-40',
+                animation: 220,
+                easing: 'cubic-bezier(.2, .7, .3, 1)',
+                ghostClass: 'is-ghost',
+                chosenClass: 'is-chosen',
+                dragClass: 'is-dragging',
+                forceFallback: true, // lets the dragged card tilt (see .is-dragging in app.css)
+                fallbackOnBody: true,
                 draggable: '[data-task]',
                 onEnd: async (evt) => {
                     const id = evt.item.dataset.task;
@@ -32,6 +44,10 @@ Alpine.data('kanban', () => ({
                     try {
                         this.error = null;
                         await window.api(`/tasks/${id}/move`, { method: 'PATCH', body: { status, position: cards.indexOf(evt.item) } });
+                        evt.item.classList.remove('drop-pop');
+                        void evt.item.offsetWidth; // restart the animation
+                        evt.item.classList.add('drop-pop');
+                        this.recount();
                         this.$dispatch('board-changed');
                     } catch (e) {
                         this.error = e.message;
@@ -134,6 +150,30 @@ Alpine.data('recentSearches', () => ({
         this.open = false;
     },
 }));
+
+/**
+ * x-countup: numbers in stat cards count up from 0 when the page opens ("22%" → 0…22%).
+ * Keeps any prefix/suffix text; skipped for people who prefer reduced motion.
+ */
+Alpine.directive('countup', (el) => {
+    const match = el.textContent.trim().match(/^(\D*)(\d+(?:\.\d+)?)(.*)$/s);
+    if (!match || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const [, prefix, number, suffix] = match;
+    const target = parseFloat(number);
+    const decimals = number.includes('.') ? number.split('.')[1].length : 0;
+    const duration = 900;
+    const start = performance.now();
+
+    const tick = (now) => {
+        const p = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = prefix + (target * eased).toFixed(decimals) + suffix;
+        if (p < 1) requestAnimationFrame(tick);
+    };
+    el.textContent = prefix + (0).toFixed(decimals) + suffix;
+    requestAnimationFrame(tick);
+});
 
 window.Alpine = Alpine;
 Alpine.start();

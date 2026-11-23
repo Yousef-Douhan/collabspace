@@ -102,7 +102,7 @@
                     <div class="{{ $tone }} px-4 py-3 text-sm font-medium">• {{ __($label) }} <span class="text-slate-400">{{ $byStatus->get($key, collect())->count() }}</span></div>
                     <div class="space-y-2 p-3">
                         @forelse ($byStatus->get($key, collect())->sortBy('position') as $t)
-                            <a href="{{ route('tasks.show', $t) }}" class="block rounded-xl border border-slate-100 p-3 hover:bg-slate-50">
+                            <a href="{{ route('tasks.show', $t) }}" class="lift block rounded-xl border border-slate-100 p-3 hover:bg-slate-50">
                                 <div class="flex items-start justify-between gap-2 text-sm font-medium">{{ $t->title }} <x-priority :value="$t->priority" /></div>
                                 <div class="mt-2 flex items-center justify-between"><x-avatars :users="$t->assignees" /><span class="text-xs text-slate-500">{{ $t->due_date?->translatedFormat('M d') }}</span></div>
                             </a>

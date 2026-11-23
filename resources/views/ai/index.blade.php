@@ -1,5 +1,5 @@
 <x-layouts.app :title="__('Ask AI')">
-    <div class="card mx-auto flex h-[calc(100vh-9rem)] min-h-[520px] max-w-3xl flex-col overflow-hidden">
+    <div class="card mx-auto flex h-[calc(100vh-9rem)] min-h-[520px] max-w-3xl flex-col overflow-hidden" x-data="{ busy: false, pending: '' }">
         <header class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
             <h1 class="flex items-center gap-2 font-semibold"><x-icon name="bot" size="5" class="text-brand" />{{ __('Ask AI') }}</h1>
             @if ($messages->isNotEmpty())
@@ -20,12 +20,12 @@
                     </div>
                 @endif
             @empty
-                <div class="flex h-full flex-col items-center justify-center text-center">
+                <div x-show="!busy" class="flex h-full flex-col items-center justify-center text-center">
                     <h2 class="text-2xl font-semibold">{{ __('Hi There 👋') }}</h2>
                     <p class="mt-1 text-sm text-slate-500">{{ __('Ask me anything about your projects, tasks, meetings and team.') }}</p>
                     <div class="mt-6 flex flex-wrap justify-center gap-2">
                         @foreach ([__('What tasks are overdue?'), __('Summarize my week'), __('Which tasks are high priority?'), __('Who has the most open tasks?')] as $suggestion)
-                            <form method="POST" action="{{ route('ai.ask') }}">@csrf
+                            <form method="POST" action="{{ route('ai.ask') }}" @submit="pending = @js($suggestion); busy = true">@csrf
                                 <input type="hidden" name="message" value="{{ $suggestion }}">
                                 <button dir="auto" class="rounded-full border border-slate-200 px-3 py-1.5 text-xs hover:border-brand hover:text-brand">{{ $suggestion }}</button>
                             </form>
@@ -33,14 +33,26 @@
                     </div>
                 </div>
             @endforelse
+
+            {{-- While the answer is on its way: show the question and a typing bubble right away --}}
+            <template x-if="busy">
+                <div class="space-y-4">
+                    <div class="msg-in flex justify-end"><p dir="auto" x-text="pending" class="max-w-[75%] whitespace-pre-line rounded-2xl rounded-ee-md bg-brand px-4 py-2 text-sm text-white"></p></div>
+                    <div class="msg-in flex gap-2">
+                        <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand"><x-icon name="sparkles" /></span>
+                        <div class="flex items-center gap-1 rounded-2xl rounded-es-md bg-slate-50 px-4 py-3 text-slate-400"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>
+                    </div>
+                </div>
+            </template>
         </div>
 
-        <form method="POST" action="{{ route('ai.ask') }}" class="border-t border-slate-100 p-4" x-data="{ busy: false }" @submit="busy = true">
+        <form method="POST" action="{{ route('ai.ask') }}" class="border-t border-slate-100 p-4"
+              @submit="pending = $refs.msg.value; busy = true; $nextTick(() => { const box = $el.previousElementSibling; box.scrollTop = box.scrollHeight; })">
             @csrf
             @error('message')<p class="mb-2 text-xs text-rose-600">{{ $message }}</p>@enderror
             <div class="flex gap-2">
-                <input name="message" value="{{ old('message') }}" required maxlength="1000" dir="auto" autocomplete="off" autofocus placeholder="{{ __('Ask me anything…') }}" class="input rounded-full">
-                <button class="btn-primary shrink-0 whitespace-nowrap" :disabled="busy"><span x-show="!busy" class="inline-flex items-center gap-1.5">{{ __('Send') }} <x-icon name="send" size="3.5" class="rtl:-scale-x-100" /></span><span x-cloak x-show="busy">{{ __('Thinking…') }}</span></button>
+                <input x-ref="msg" name="message" value="{{ old('message') }}" required maxlength="1000" dir="auto" autocomplete="off" autofocus placeholder="{{ __('Ask me anything…') }}" class="input rounded-full">
+                <button class="btn-primary shrink-0 whitespace-nowrap" :disabled="busy"><span x-show="!busy" class="inline-flex items-center gap-1.5">{{ __('Send') }} <x-icon name="send" size="3.5" class="rtl:-scale-x-100" /></span><span x-cloak x-show="busy" class="inline-flex items-center gap-1" aria-label="{{ __('Thinking…') }}"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></span></button>
             </div>
         </form>
     </div>

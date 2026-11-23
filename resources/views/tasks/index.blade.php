@@ -31,14 +31,14 @@
         </form>
     </x-page-header>
 
-    <div x-data="kanban" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div x-data="kanban" class="stagger grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <p x-cloak x-show="error" x-text="error" class="col-span-full rounded-xl bg-rose-50 px-4 py-2 text-sm text-rose-700"></p>
 
         @foreach ($meta as $status => [$label, $tone])
             <section class="flex min-h-40 flex-col rounded-3xl bg-white/60 p-2">
                 <header class="{{ $tone }} mb-2 flex items-center justify-between rounded-2xl px-4 py-2.5 text-sm font-semibold">
                     <span>• {{ __($label) }}</span>
-                    <span class="rounded-full bg-white/70 px-2 text-xs">{{ $columns[$status]->count() }}</span>
+                    <span data-count class="rounded-full bg-white/70 px-2 text-xs">{{ $columns[$status]->count() }}</span>
                 </header>
 
                 <div data-column="{{ $status }}" class="flex min-h-24 flex-1 flex-col gap-2">
