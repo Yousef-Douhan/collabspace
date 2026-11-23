@@ -41,7 +41,7 @@
 <body class="min-h-screen bg-canvas font-sans text-ink antialiased">
     {{-- Top bar (Figma: wordmark · pill nav · search · bell · user) --}}
     <header class="sticky top-0 z-30 border-b border-slate-200/70 bg-white print:hidden">
-        <div class="mx-auto flex h-16 max-w-[1360px] items-center gap-6 px-6">
+        <div class="mx-auto flex h-16 max-w-[1360px] items-center gap-3 px-6 xl:gap-6">
             <a href="{{ route('dashboard') }}" class="text-lg font-semibold tracking-tight">Collabspace</a>
 
             <nav class="flex items-center gap-1 rounded-full bg-slate-100 p-1">
@@ -56,7 +56,7 @@
             </nav>
 
             {{-- Search with "Recent Searches" (Figma: Search Bar overlay). History is kept per browser. --}}
-            <form action="{{ route('search') }}" class="relative ms-auto hidden w-64 lg:block"
+            <form action="{{ route('search') }}" class="relative ms-auto hidden w-64 xl:block"
                   x-data="recentSearches" @submit="remember($refs.q.value)" @click.outside="open = false" @keydown.escape="open = false">
                 <div class="flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5">
                     <svg class="size-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -79,70 +79,73 @@
 
             {{-- Real-time status: shown only while the Reverb WebSocket is connected --}}
             <span x-data="{ on: false }" x-init="window.onRealtimeState?.((v) => (on = v))" x-cloak x-show="on" x-transition.opacity
-                  class="hidden items-center gap-1.5 whitespace-nowrap rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700 lg:inline-flex" title="{{ __('Real-time updates are on') }}">
+                  class="hidden h-8 items-center gap-1.5 whitespace-nowrap rounded-full bg-emerald-50 px-3 text-[11px] font-semibold text-emerald-700 xl:inline-flex" title="{{ __('Real-time updates are on') }}">
                 <span class="relative flex size-2"><span class="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex size-2 rounded-full bg-emerald-500"></span></span>
                 {{ __('Live') }}
             </span>
 
-            {{-- Dark / light mode --}}
-            <button type="button" x-data="themeToggle" @click="toggle()" class="inline-flex size-8 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-600 transition hover:border-brand hover:text-brand" title="{{ __('Dark / light mode') }}" aria-label="{{ __('Dark / light mode') }}">
-                <svg class="theme-icon-moon size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-                <svg class="theme-icon-sun size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-            </button>
-
-            {{-- Language menu (Figma: Language overlay) --}}
+            {{-- One toolbar for the header controls: theme · language · notifications --}}
             @php $languages = ['en' => 'English', 'ar' => 'العربية', 'fr' => 'Français']; @endphp
-            <div x-data="{ open: false }" class="relative" @click.outside="open = false">
-                <button type="button" @click="open = !open" class="whitespace-nowrap rounded-full border border-slate-300 bg-white px-3 py-1 text-xs text-slate-600 hover:border-brand hover:text-brand">
-                    {{ $languages[app()->getLocale()] ?? 'English' }} ▾
+            <div class="ms-auto flex shrink-0 items-center gap-0.5 rounded-full bg-slate-100 p-1 xl:ms-0">
+                <button type="button" x-data="themeToggle" @click="toggle()" class="inline-flex size-8 items-center justify-center rounded-full text-slate-600 transition hover:bg-white hover:text-brand hover:shadow-sm" title="{{ __('Dark / light mode') }}" aria-label="{{ __('Dark / light mode') }}">
+                    <svg class="theme-icon-moon size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+                    <svg class="theme-icon-sun size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
                 </button>
-                <div x-cloak x-show="open" x-transition.opacity class="absolute end-0 z-40 mt-2 w-40 rounded-2xl border border-slate-100 bg-white p-2 shadow-lg">
-                    @foreach ($languages as $code => $name)
-                        <form method="POST" action="{{ route('locale.switch') }}">
-                            @csrf
-                            <button type="submit" name="locale" value="{{ $code }}" class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-start text-sm hover:bg-slate-50">
-                                {{ $name }} @if (app()->getLocale() === $code)<x-icon name="check-circle" class="text-emerald-500" />@endif
-                            </button>
-                        </form>
-                    @endforeach
-                </div>
-            </div>
 
-            {{-- Notifications dropdown --}}
-            <div x-data="{ open: false }" class="relative">
-                <button @click="open = !open" class="relative rounded-full p-2 hover:bg-slate-100" aria-label="Notifications">
-                    <svg @class(["size-5", "bell-ring" => $unread]) fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-                    @if ($unread)
-                        <span class="absolute end-1 top-1 flex size-2"><span class="absolute inline-flex size-full animate-ping rounded-full bg-rose-400 opacity-75"></span><span class="relative inline-flex size-2 rounded-full bg-rose-500"></span></span>
-                    @endif
-                </button>
-                <div x-cloak x-show="open" @click.outside="open = false" x-transition.origin.top
-                     class="absolute end-0 mt-2 w-80 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
-                    <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-                        <span class="text-sm font-semibold">{{ __('Notifications') }}</span>
-                        @if ($unread)
-                            <form method="POST" action="{{ route('notifications.read-all') }}">@csrf
-                                <button class="text-xs text-brand">{{ __('Mark all read') }}</button>
+                <div x-data="{ open: false }" class="relative" @click.outside="open = false">
+                    <button type="button" @click="open = !open" class="inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold text-slate-600 transition hover:bg-white hover:text-brand hover:shadow-sm" title="{{ __('Language') }}" aria-label="{{ __('Language') }}">
+                        <svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+                        {{ strtoupper(app()->getLocale()) }}
+                        <svg class="size-3 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div x-cloak x-show="open" x-transition.opacity class="absolute end-0 z-40 mt-2 w-40 rounded-2xl border border-slate-100 bg-white p-2 shadow-lg">
+                        @foreach ($languages as $code => $name)
+                            <form method="POST" action="{{ route('locale.switch') }}">
+                                @csrf
+                                <button type="submit" name="locale" value="{{ $code }}" @class(['flex w-full items-center justify-between rounded-lg px-3 py-2 text-start text-sm hover:bg-slate-50', 'font-semibold text-brand' => app()->getLocale() === $code])>
+                                    {{ $name }} @if (app()->getLocale() === $code)<x-icon name="check-circle" class="text-emerald-500" />@endif
+                                </button>
                             </form>
-                        @endif
+                        @endforeach
                     </div>
-                    @forelse ($latest as $n)
-                        <a href="{{ route('notifications.open', $n->id) }}" @class(['block border-b border-slate-50 px-4 py-3 text-sm hover:bg-slate-50', 'bg-brand-50/50' => ! $n->read_at])>
-                            <div class="font-medium">{{ $n->data['title'] ?? '' }}</div>
-                            <div class="text-xs text-slate-500">{{ $n->data['message'] ?? '' }}</div>
-                            <div class="mt-1 text-[11px] text-slate-400">{{ $n->created_at->diffForHumans() }}</div>
-                        </a>
-                    @empty
-                        <p class="px-4 py-6 text-center text-sm text-slate-400">{{ __('You\'re all caught up.') }}</p>
-                    @endforelse
-                    <a href="{{ route('notifications.index') }}" class="block px-4 py-2.5 text-center text-xs font-medium text-brand hover:bg-slate-50">{{ __('View all') }}</a>
+                </div>
+
+                {{-- Notifications --}}
+                <div x-data="{ open: false }" class="relative">
+                    <button type="button" @click="open = !open" class="relative inline-flex size-8 items-center justify-center rounded-full text-slate-600 transition hover:bg-white hover:text-brand hover:shadow-sm" title="{{ __('Notifications') }}" aria-label="{{ __('Notifications') }}">
+                        <svg @class(["size-[18px]", "bell-ring" => $unread]) fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                        @if ($unread)
+                            <span class="absolute end-1.5 top-1.5 flex size-2"><span class="absolute inline-flex size-full animate-ping rounded-full bg-rose-400 opacity-75"></span><span class="relative inline-flex size-2 rounded-full bg-rose-500"></span></span>
+                        @endif
+                    </button>
+                    <div x-cloak x-show="open" @click.outside="open = false" x-transition.origin.top
+                         class="absolute end-0 mt-2 w-80 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+                        <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+                            <span class="text-sm font-semibold">{{ __('Notifications') }}</span>
+                            @if ($unread)
+                                <form method="POST" action="{{ route('notifications.read-all') }}">@csrf
+                                    <button class="text-xs text-brand">{{ __('Mark all read') }}</button>
+                                </form>
+                            @endif
+                        </div>
+                        @forelse ($latest as $n)
+                            <a href="{{ route('notifications.open', $n->id) }}" @class(['block border-b border-slate-50 px-4 py-3 text-sm hover:bg-slate-50', 'bg-brand-50/50' => ! $n->read_at])>
+                                <div class="font-medium">{{ $n->data['title'] ?? '' }}</div>
+                                <div class="text-xs text-slate-500">{{ $n->data['message'] ?? '' }}</div>
+                                <div class="mt-1 text-[11px] text-slate-400">{{ $n->created_at->diffForHumans() }}</div>
+                            </a>
+                        @empty
+                            <p class="px-4 py-6 text-center text-sm text-slate-400">{{ __('You\'re all caught up.') }}</p>
+                        @endforelse
+                        <a href="{{ route('notifications.index') }}" class="block px-4 py-2.5 text-center text-xs font-medium text-brand hover:bg-slate-50">{{ __('View all') }}</a>
+                    </div>
                 </div>
             </div>
 
             {{-- User menu --}}
             <div x-data="{ open: false }" class="relative">
                 <button @click="open = !open" class="flex items-center gap-2.5 text-start">
-                    <span class="hidden whitespace-nowrap text-end leading-tight lg:block">
+                    <span class="hidden whitespace-nowrap text-end leading-tight xl:block">
                         <span class="block text-xs font-semibold">{{ $user->name }}</span>
                         <span class="block text-[11px] text-slate-500">{{ $user->track?->label() }}</span>
                     </span>
