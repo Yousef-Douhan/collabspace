@@ -67,28 +67,76 @@
         </aside>
     </div>
 
-    <x-modal name="new-meeting" :title="__('Schedule Meeting')" width="max-w-xl">
-        <form method="POST" action="{{ route('meetings.store') }}" class="space-y-3">
+    {{-- New Meeting (Figma "Add Meeting overlay": subject · date · time · duration · guests · note · reminder · notify via · attachments) --}}
+    <x-modal name="new-meeting" :title="__('New Meeting')" width="max-w-2xl">
+        <form method="POST" action="{{ route('meetings.store') }}" enctype="multipart/form-data" class="space-y-4"
+              x-data="{
+                  date: @js(old('starts_at') ? \Illuminate\Support\Str::before(old('starts_at'), 'T') : now()->addDay()->toDateString()),
+                  time: @js(old('starts_at') ? \Illuminate\Support\Str::after(old('starts_at'), 'T') : '10:00'),
+                  duration: 30,
+                  files: [],
+                  pad: (n) => String(n).padStart(2, '0'),
+                  get startsAt() { return this.date && this.time ? `${this.date}T${this.time}` : ''; },
+                  get endsAt() {
+                      if (!this.startsAt) return '';
+                      const d = new Date(this.startsAt); d.setMinutes(d.getMinutes() + Number(this.duration));
+                      return `${d.getFullYear()}-${this.pad(d.getMonth() + 1)}-${this.pad(d.getDate())}T${this.pad(d.getHours())}:${this.pad(d.getMinutes())}`;
+                  },
+              }">
             @csrf
             <input type="hidden" name="_modal" value="new-meeting">
-            <div><label class="label">{{ __('Title') }}</label><input name="title" value="{{ old('title') }}" required class="input"></div>
-            <div><label class="label">{{ __('Agenda') }}</label><textarea name="agenda" rows="2" class="input">{{ old('agenda') }}</textarea></div>
+            <input type="hidden" name="starts_at" :value="startsAt">
+            <input type="hidden" name="ends_at" :value="endsAt">
+
+            <div><label class="label">{{ __('Meeting Subject') }}</label><input name="title" value="{{ old('title') }}" required class="input"></div>
+
+            <div class="grid grid-cols-3 gap-3">
+                <div><label class="label">{{ __('Select Date') }}</label><input type="date" x-model="date" required class="input"></div>
+                <div><label class="label">{{ __('Select Time') }}</label><input type="time" x-model="time" required class="input"></div>
+                <div><label class="label">{{ __('Select Duration') }}</label>
+                    <select x-model="duration" class="input">
+                        @foreach ([15, 30, 45, 60, 90, 120] as $min)<option value="{{ $min }}">{{ trans_choice(':count minute|:count minutes', $min) }}</option>@endforeach
+                    </select>
+                </div>
+            </div>
+
+            <div><label class="label">{{ __('Add Guests') }}</label>
+                <select name="attendees[]" multiple class="input h-24">@foreach ($users as $u)@continue($u->id === auth()->id())<option value="{{ $u->id }}" @selected(in_array($u->id, old('attendees', [])))>{{ $u->name }}</option>@endforeach</select>
+            </div>
+
+            <div><label class="label">{{ __('Add Note') }}</label><textarea name="agenda" rows="2" dir="auto" placeholder="{{ __('The goal of this meeting is…') }}" class="input">{{ old('agenda') }}</textarea></div>
+
             <div class="grid grid-cols-2 gap-3">
-                <div><label class="label">{{ __('Starts') }}</label><input type="datetime-local" name="starts_at" value="{{ old('starts_at') }}" required class="input"></div>
-                <div><label class="label">{{ __('Ends') }}</label><input type="datetime-local" name="ends_at" value="{{ old('ends_at') }}" required class="input"></div>
                 <div><label class="label">{{ __('Project') }}</label>
                     <select name="project_id" class="input"><option value="">{{ __('— None —') }}</option>@foreach ($projects as $p)<option value="{{ $p->id }}" @selected(old('project_id') == $p->id)>{{ $p->name }}</option>@endforeach</select>
                 </div>
-                <div><label class="label">{{ __('Reminder') }}</label>
-                    <select name="reminder_minutes" class="input">@foreach ([0 => 'None', 5 => '5 min before', 15 => '15 min before', 30 => '30 min before', 60 => '1 hour before'] as $v => $l)<option value="{{ $v }}" @selected(old('reminder_minutes', 15) == $v)>{{ $l }}</option>@endforeach</select>
+                <div><label class="label">{{ __('Location') }}</label>
+                    <input name="location" list="meeting-locations" value="{{ old('location', __('Meeting room')) }}" class="input">
+                    <datalist id="meeting-locations"><option value="{{ __('Meeting room') }}"><option value="{{ __('Online') }}"></datalist>
                 </div>
-                <div><label class="label">{{ __('Location') }}</label><input name="location" value="{{ old('location') }}" class="input"></div>
-                <div><label class="label">{{ __('Meeting link') }}</label><input type="url" name="meeting_link" value="{{ old('meeting_link') }}" placeholder="{{ __('https://meet.google.com/…') }}" class="input"></div>
+                <div class="col-span-2"><label class="label">{{ __('Meeting link') }}</label><input type="url" name="meeting_link" value="{{ old('meeting_link') }}" placeholder="https://meet.google.com/…" class="input"></div>
             </div>
-            <div><label class="label">{{ __('Attendees') }}</label>
-                <select name="attendees[]" multiple class="input h-28">@foreach ($users as $u)@continue($u->id === auth()->id())<option value="{{ $u->id }}" @selected(in_array($u->id, old('attendees', [])))>{{ $u->name }}</option>@endforeach</select>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div><label class="label">{{ __('Set Reminder') }}</label>
+                    <select name="reminder_minutes" class="input">@foreach ([0 => 'None', 5 => '5 min before', 15 => '15 min before', 30 => '30 min before', 60 => '1 hour before event', 1440 => '1 day before'] as $v => $l)<option value="{{ $v }}" @selected(old('reminder_minutes', 15) == $v)>{{ __($l) }}</option>@endforeach</select>
+                </div>
+                <div><label class="label">{{ __('Notification') }}</label>
+                    <div class="flex flex-wrap gap-3 pt-2 text-sm">
+                        <label class="flex items-center gap-1.5"><input type="checkbox" name="notify_channels[]" value="app" checked disabled> {{ __('In-app') }}</label>
+                        <label class="flex items-center gap-1.5"><input type="checkbox" name="notify_channels[]" value="email" @checked(in_array('email', old('notify_channels', [])))> {{ __('Email') }}</label>
+                        <label class="flex items-center gap-1.5"><input type="checkbox" name="notify_channels[]" value="slack" @checked(in_array('slack', old('notify_channels', [])))> Slack</label>
+                    </div>
+                </div>
             </div>
-            <button class="btn-primary w-full">{{ __('Schedule') }}</button>
+
+            <label class="flex cursor-pointer items-center gap-3 rounded-2xl border-2 border-dashed border-slate-200 p-4 text-sm text-slate-500 hover:border-brand">
+                <x-icon name="paperclip" size="5" class="text-brand" />
+                <span x-text="files.length ? files.join(', ') : @js(__('Upload Attachment (optional, max 20 MB each)'))" class="truncate"></span>
+                <input type="file" name="attachments[]" multiple class="hidden" @change="files = [...$event.target.files].map(f => f.name)">
+            </label>
+
+            <button class="btn-primary w-full">{{ __('Add Meeting') }}</button>
         </form>
     </x-modal>
 </x-layouts.app>

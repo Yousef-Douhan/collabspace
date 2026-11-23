@@ -96,5 +96,44 @@ Alpine.data('chatThread', (url) => ({
     },
 }));
 
+/**
+ * Navbar search history (Figma "Recent Searches" overlay). Stored in this browser only;
+ * storage can be unavailable (private mode), so every access is guarded.
+ */
+Alpine.data('recentSearches', () => ({
+    key: 'collabspace.recentSearches',
+    open: false,
+    items: [],
+    init() {
+        try {
+            this.items = JSON.parse(localStorage.getItem(this.key) || '[]');
+        } catch {
+            this.items = [];
+        }
+    },
+    save() {
+        try {
+            localStorage.setItem(this.key, JSON.stringify(this.items));
+        } catch {
+            // ignore: history simply isn't kept
+        }
+    },
+    remember(term) {
+        term = (term || '').trim();
+        if (term.length < 2) return;
+        this.items = [term, ...this.items.filter((t) => t !== term)].slice(0, 6);
+        this.save();
+    },
+    forget(term) {
+        this.items = this.items.filter((t) => t !== term);
+        this.save();
+    },
+    clear() {
+        this.items = [];
+        this.save();
+        this.open = false;
+    },
+}));
+
 window.Alpine = Alpine;
 Alpine.start();

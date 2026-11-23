@@ -22,7 +22,7 @@ class TaskController extends Controller
 {
     public function __construct(private TaskService $tasks) {}
 
-    /** The Kanban board. Filters: project_id, mine=1, q. */
+    /** The Kanban board. Filters: project_id, mine=1, due=overdue|week, priority, q. */
     public function index(Request $request): View
     {
         $user = $request->user();
@@ -33,6 +33,10 @@ class TaskController extends Controller
             ->when($request->filled('project_id'), fn (Builder $q) => $q->where('project_id', $request->integer('project_id')))
             ->when($request->boolean('mine'), fn (Builder $q) => $q->whereHas('assignees', fn (Builder $a) => $a->whereKey($user->id)))
             ->when($request->filled('q'), fn (Builder $q) => $q->where('title', 'like', '%'.$request->input('q').'%'))
+            // Designer review #77 / #88: filter by late ("failed") work.
+            ->when($request->input('due') === 'overdue', fn (Builder $q) => $q->where('status', '!=', TaskStatus::Completed)->whereDate('due_date', '<', today()))
+            ->when($request->input('due') === 'week', fn (Builder $q) => $q->whereBetween('due_date', [today(), today()->endOfWeek()]))
+            ->when($request->filled('priority'), fn (Builder $q) => $q->where('priority', $request->input('priority')))
             ->orderBy('position')
             ->get();
 

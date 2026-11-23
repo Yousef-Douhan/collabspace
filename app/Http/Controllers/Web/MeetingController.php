@@ -12,6 +12,7 @@ use App\Models\Project;
 use App\Models\User;
 use App\Services\MeetingService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -48,7 +49,13 @@ class MeetingController extends Controller
 
     public function store(StoreMeetingRequest $request): RedirectResponse
     {
+        $request->validate(['attachments' => ['nullable', 'array', 'max:10'], 'attachments.*' => ['file', 'max:20480']]);
+
         $meeting = $this->meetings->create($request->user(), $request->validated());
+
+        foreach ($request->file('attachments', []) as $file) {
+            $this->addAttachment($meeting, $request->user()->id, $file);
+        }
 
         return redirect()->route('meetings.show', $meeting)->with('status', __('Meeting scheduled.'));
     }
@@ -133,15 +140,7 @@ class MeetingController extends Controller
         Gate::authorize('summarize', $meeting);
 
         $request->validate(['file' => ['required', 'file', 'max:20480']]);
-        $file = $request->file('file');
-
-        $meeting->attachments()->create([
-            'uploaded_by' => $request->user()->id,
-            'original_name' => $file->getClientOriginalName(),
-            'path' => $file->store("meetings/{$meeting->id}", 'local'),
-            'mime_type' => $file->getClientMimeType(),
-            'size_bytes' => $file->getSize(),
-        ]);
+        $this->addAttachment($meeting, $request->user()->id, $request->file('file'));
 
         return back()->with('status', __('Attachment uploaded.'));
     }
@@ -162,5 +161,16 @@ class MeetingController extends Controller
         $attachment->delete();
 
         return back()->with('status', __('Attachment removed.'));
+    }
+
+    private function addAttachment(Meeting $meeting, int $userId, UploadedFile $file): void
+    {
+        $meeting->attachments()->create([
+            'uploaded_by' => $userId,
+            'original_name' => $file->getClientOriginalName(),
+            'path' => $file->store("meetings/{$meeting->id}", 'local'),
+            'mime_type' => $file->getClientMimeType(),
+            'size_bytes' => $file->getSize(),
+        ]);
     }
 }

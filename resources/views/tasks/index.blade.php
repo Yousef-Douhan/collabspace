@@ -19,6 +19,15 @@
                 <option value="">{{ __('All Tasks') }}</option>
                 <option value="1" @selected(request('mine'))>{{ __('My Task') }}</option>
             </select>
+            <select name="due" onchange="this.form.submit()" @class(['input w-auto rounded-full', 'border-rose-300 text-rose-600' => request('due') === 'overdue'])>
+                <option value="">{{ __('Any due date') }}</option>
+                <option value="overdue" @selected(request('due') === 'overdue')>{{ __('Overdue') }}</option>
+                <option value="week" @selected(request('due') === 'week')>{{ __('Due this week') }}</option>
+            </select>
+            <select name="priority" onchange="this.form.submit()" class="input w-auto rounded-full">
+                <option value="">{{ __('Any priority') }}</option>
+                @foreach (\App\Enums\Priority::cases() as $pr)<option value="{{ $pr->value }}" @selected(request('priority') === $pr->value)>{{ $pr->label() }}</option>@endforeach
+            </select>
         </form>
     </x-page-header>
 

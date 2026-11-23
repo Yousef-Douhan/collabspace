@@ -12,11 +12,16 @@ use App\Models\User;
 use App\Support\Trend;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 /** Everything the Dashboard screen shows, in one call. */
 class DashboardService
 {
-    public function build(User $user, ?int $projectId = null, string $period = 'month'): array
+    /**
+     * @param  string  $period  today|week|month|quarter|year|all: the window for the stat cards and the chart
+     * @param  string|null  $track  limit the "Teams" card to one track (ui_ux, front_end, …)
+     */
+    public function build(User $user, ?int $projectId = null, string $period = 'month', ?string $track = null): array
     {
         $since = $this->periodStart($period);
         $scopeProject = fn (Builder $q) => $projectId ? $q->where('project_id', $projectId) : $q;
@@ -40,6 +45,14 @@ class DashboardService
             ->get();
 
         $projectIds = Project::visibleTo($user)->pluck('id');
+        $scopedProjectIds = $projectId ? collect([$projectId]) : $projectIds;
+
+        // "Leader" badge: owners and managers of the projects in view.
+        $leaderIds = DB::table('project_members')
+            ->whereIn('project_id', $scopedProjectIds)
+            ->whereIn('role', ['owner', 'manager'])
+            ->pluck('user_id')
+            ->unique();
 
         return [
             'period' => $period,
@@ -52,9 +65,12 @@ class DashboardService
                 'completion_rate' => $total > 0 ? (int) round($completed / $total * 100) : 0,
                 'overdue' => (clone $tasks)->where('status', '!=', TaskStatus::Completed)->whereDate('due_date', '<', today())->count(),
             ],
+            'track' => $track,
             'active_projects' => $projects->map(fn (Project $p) => [
                 'id' => $p->id,
                 'name' => $p->name,
+                'tasks' => $p->tasks_count,
+                'completed_tasks' => $p->completed_tasks_count,
                 'priority' => $p->priority->value,
                 'completion_percentage' => $p->completion_percentage,
                 'end_date' => $p->end_date?->toDateString(),
@@ -76,7 +92,8 @@ class DashboardService
                     'due_date' => $t->due_date?->toDateString(),
                     'is_overdue' => $t->isOverdue(),
                 ]),
-            'team_status' => User::whereHas('projects', fn (Builder $q) => $q->whereIn('projects.id', $projectIds))
+            'team_status' => User::whereHas('projects', fn (Builder $q) => $q->whereIn('projects.id', $scopedProjectIds))
+                ->when($track, fn (Builder $q) => $q->where('track', $track))
                 ->withCount([
                     'tasks',
                     'tasks as completed_tasks_count' => fn (Builder $q) => $q->where('status', TaskStatus::Completed),
@@ -89,11 +106,13 @@ class DashboardService
                     'name' => $u->name,
                     'track' => $u->track?->value,
                     'availability' => $u->availability?->value,
+                    'avatar_url' => $u->avatar_url,
+                    'is_leader' => $leaderIds->contains($u->id),
                     'tasks' => $u->tasks_count,
                     'completed_tasks' => $u->completed_tasks_count,
                 ]),
             'upcoming_meetings' => Meeting::visibleTo($user)
-                ->with('project:id,name')
+                ->with(['project:id,name', 'attendees'])
                 ->where('ends_at', '>=', now())
                 ->orderBy('starts_at')
                 ->limit(4)
@@ -103,9 +122,11 @@ class DashboardService
                     'title' => $m->title,
                     'project' => $m->project?->name,
                     'starts_at' => $m->starts_at->toIso8601String(),
+                    'ends_at' => $m->ends_at->toIso8601String(),
+                    'attendees' => $m->attendees->map(fn (User $a) => ['id' => $a->id, 'name' => $a->name, 'avatar_url' => $a->avatar_url])->values(),
                 ]),
             'recent_files' => ProjectFile::visibleTo($user)
-                ->with('project:id,name')
+                ->with(['project:id,name', 'uploader:id,name'])
                 ->latest()
                 ->limit(5)
                 ->get()
@@ -114,6 +135,8 @@ class DashboardService
                     'name' => $f->original_name,
                     'size' => $f->formatted_size,
                     'project' => $f->project->name,
+                    'uploaded_by' => $f->uploader?->name,
+                    'created_at' => $f->created_at->toIso8601String(),
                 ]),
             'recent_activity' => ActivityLog::with('user:id,name')
                 ->whereIn('project_id', $projectIds)
@@ -128,7 +151,7 @@ class DashboardService
                 ]),
             'changes' => $this->monthOverMonth(clone $tasks),
             'charts' => [
-                'project_overview' => $this->monthlySeries(clone $tasks, 6),
+                'project_overview' => $this->overviewSeries(clone $tasks, $period),
             ],
             'unread_notifications' => $user->unreadNotifications()->count(),
         ];
@@ -162,6 +185,46 @@ class DashboardService
             'completed' => Trend::change($pick($now, TaskStatus::Completed), $pick($before, TaskStatus::Completed)),
             'completion_rate_points' => $rate($now) - $rate($before),
         ];
+    }
+
+    /**
+     * "Project overview" chart: tasks created vs completed, bucketed to fit the chosen period
+     * (Figma "Duration" menu): today → 3-hour slots, week → days, month → days so far,
+     * quarter → weeks, year → months of this year, all → the last 6 months.
+     */
+    private function overviewSeries(Builder $tasks, string $period): array
+    {
+        $now = CarbonImmutable::now();
+
+        [$start, $step, $format] = match ($period) {
+            'today' => [$now->startOfDay(), '3 hours', 'H:i'],
+            'week' => [$now->startOfWeek(), '1 day', 'D'],
+            'month' => [$now->startOfMonth(), '1 day', 'j'],
+            'quarter' => [$now->subMonths(3)->startOfWeek(), '1 week', 'M j'],
+            'year' => [$now->startOfYear(), '1 month', 'M'],
+            default => [null, null, null],
+        };
+
+        if ($start === null) {
+            return $this->monthlySeries($tasks, 6);
+        }
+
+        $rows = (clone $tasks)
+            ->where(fn (Builder $q) => $q->where('created_at', '>=', $start)->orWhere('completed_at', '>=', $start))
+            ->get(['id', 'created_at', 'completed_at']);
+
+        $series = [];
+        for ($from = $start; $from <= $now; $from = $from->add($step)) {
+            $to = $from->add($step);
+            $in = fn ($date) => $date !== null && $date >= $from && $date < $to;
+            $series[] = [
+                'month' => $from->translatedFormat($format),
+                'created' => $rows->filter(fn (Task $t) => $in($t->created_at))->count(),
+                'completed' => $rows->filter(fn (Task $t) => $in($t->completed_at))->count(),
+            ];
+        }
+
+        return $series;
     }
 
     /** Tasks created vs completed per month — the "Project overview" line chart. */

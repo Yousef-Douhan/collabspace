@@ -14,7 +14,7 @@ use RuntimeException;
 
 class MeetingService
 {
-    public function __construct(private ActivityLogger $activity, private AiService $ai) {}
+    public function __construct(private ActivityLogger $activity, private AiService $ai, private SlackNotifier $slack) {}
 
     public function create(User $creator, array $data): Meeting
     {
@@ -28,6 +28,14 @@ class MeetingService
         });
 
         $this->activity->log($creator, 'meeting.scheduled', "scheduled \"{$meeting->title}\"", $meeting, $meeting->project);
+
+        if ($meeting->notifies('slack')) {
+            $this->slack->post(
+                "📅 {$creator->name} scheduled *{$meeting->title}* — {$meeting->starts_at->format('D M j, H:i')}"
+                    .($meeting->location ? " · {$meeting->location}" : ''),
+                route('meetings.show', $meeting),
+            );
+        }
 
         return $meeting;
     }
@@ -125,6 +133,10 @@ class MeetingService
             );
             Notification::send($attendees, new MeetingReminder($meeting));
             $meeting->update(['reminder_sent_at' => now()]);
+
+            if ($meeting->notifies('slack')) {
+                $this->slack->post("⏰ *{$meeting->title}* starts at {$meeting->starts_at->format('H:i')}", route('meetings.show', $meeting));
+            }
         }
 
         return $due->count();

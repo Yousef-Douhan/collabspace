@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Enums\Track;
 use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Services\DashboardService;
@@ -18,8 +19,11 @@ class DashboardController extends Controller
             Gate::authorize('view', Project::findOrFail($projectId));
         }
 
+        $period = in_array($request->input('period'), ['today', 'week', 'month', 'quarter', 'year'], true) ? $request->input('period') : 'year';
+        $track = Track::tryFrom((string) $request->input('track'))?->value;
+
         return view('dashboard.index', [
-            'd' => $dashboard->build($request->user(), $projectId, $request->input('period', 'all')),
+            'd' => $dashboard->build($request->user(), $projectId, $period, $track),
             'projects' => Project::visibleTo($request->user())->orderBy('name')->get(['id', 'name']),
             'projectId' => $projectId,
         ]);

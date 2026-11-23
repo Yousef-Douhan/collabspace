@@ -34,3 +34,10 @@
 }
 
 [x-cloak] { display: none !important; }
+
+/* Printing (Reports → "Print / Save PDF"): flat white pages, cards kept whole. */
+@media print {
+    body { background: #fff !important; }
+    .card { box-shadow: none !important; break-inside: avoid; }
+    main { max-width: none !important; padding: 0 !important; }
+}

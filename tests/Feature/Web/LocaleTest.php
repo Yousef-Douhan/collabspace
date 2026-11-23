@@ -27,7 +27,7 @@ class LocaleTest extends TestCase
 
     public function test_unknown_locale_is_rejected(): void
     {
-        $this->get('/locale/fr')->assertNotFound();
+        $this->get('/locale/de')->assertNotFound();
     }
 
     public function test_choice_is_saved_on_the_account(): void

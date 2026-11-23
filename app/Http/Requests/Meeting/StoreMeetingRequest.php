@@ -28,6 +28,8 @@ class StoreMeetingRequest extends FormRequest
             'starts_at' => ['required', 'date'],
             'ends_at' => ['required', 'date', 'after:starts_at'],
             'reminder_minutes' => ['nullable', 'integer', 'min:0', 'max:10080'],
+            'notify_channels' => ['nullable', 'array'],
+            'notify_channels.*' => ['string', 'in:app,email,slack'],
             'transcript' => ['nullable', 'string', 'max:200000'],
             'attendees' => ['nullable', 'array'],
             'attendees.*' => ['integer', 'distinct', 'exists:users,id'],

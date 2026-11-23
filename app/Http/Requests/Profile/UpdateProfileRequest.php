@@ -25,7 +25,7 @@ class UpdateProfileRequest extends FormRequest
             'availability' => ['sometimes', Rule::enum(Availability::class)],
             'years_of_experience' => ['sometimes', 'integer', 'min:0', 'max:60'],
             'about' => ['sometimes', 'nullable', 'string', 'max:2000'],
-            'locale' => ['sometimes', Rule::in(['en', 'ar'])],
+            'locale' => ['sometimes', Rule::in(['en', 'ar', 'fr'])],
         ];
     }
 }

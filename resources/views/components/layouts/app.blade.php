@@ -31,7 +31,7 @@
 </head>
 <body class="min-h-screen bg-canvas font-sans text-ink antialiased">
     {{-- Top bar (Figma: wordmark · pill nav · search · bell · user) --}}
-    <header class="sticky top-0 z-30 border-b border-slate-200/70 bg-white">
+    <header class="sticky top-0 z-30 border-b border-slate-200/70 bg-white print:hidden">
         <div class="mx-auto flex h-16 max-w-[1360px] items-center gap-6 px-6">
             <a href="{{ route('dashboard') }}" class="text-lg font-semibold tracking-tight">Collabspace</a>
 
@@ -46,12 +46,42 @@
                 @endforeach
             </nav>
 
-            <form action="{{ route('search') }}" class="ms-auto hidden w-64 items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 lg:flex">
-                <svg class="size-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-                <input name="q" value="{{ request('q') }}" placeholder="{{ __('Search') }}" class="w-full bg-transparent text-sm outline-none">
+            {{-- Search with "Recent Searches" (Figma: Search Bar overlay). History is kept per browser. --}}
+            <form action="{{ route('search') }}" class="relative ms-auto hidden w-64 lg:block"
+                  x-data="recentSearches" @submit="remember($refs.q.value)" @click.outside="open = false" @keydown.escape="open = false">
+                <div class="flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5">
+                    <svg class="size-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                    <input x-ref="q" name="q" value="{{ request('q') }}" placeholder="{{ __('Search') }}" autocomplete="off" @focus="open = items.length > 0" class="w-full bg-transparent text-sm outline-none">
+                </div>
+                <div x-cloak x-show="open && items.length" x-transition.opacity
+                     class="absolute inset-x-0 z-40 mt-2 rounded-2xl border border-slate-100 bg-white p-3 shadow-lg">
+                    <div class="mb-1 flex items-center justify-between px-1">
+                        <span class="text-xs font-medium text-slate-500">{{ __('Recent Searches') }}</span>
+                        <button type="button" @click="clear()" class="text-[11px] text-slate-400 hover:text-rose-600">{{ __('Clear all') }}</button>
+                    </div>
+                    <template x-for="term in items" :key="term">
+                        <div class="flex items-center justify-between rounded-lg px-1 hover:bg-slate-50">
+                            <a :href="@js(route('search')) + '?q=' + encodeURIComponent(term)" @click="remember(term)" x-text="term" dir="auto" class="flex-1 truncate py-1.5 text-sm"></a>
+                            <button type="button" @click="forget(term)" class="p-1 text-slate-400 hover:text-rose-600" :title="@js(__('Remove'))">✕</button>
+                        </div>
+                    </template>
+                </div>
             </form>
 
-            <a href="{{ route('locale.switch', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" class="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs text-slate-600 hover:border-brand hover:text-brand">{{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}</a>
+            {{-- Language menu (Figma: Language overlay) --}}
+            @php $languages = ['en' => 'English', 'ar' => 'العربية', 'fr' => 'Français']; @endphp
+            <div x-data="{ open: false }" class="relative" @click.outside="open = false">
+                <button type="button" @click="open = !open" class="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs text-slate-600 hover:border-brand hover:text-brand">
+                    {{ $languages[app()->getLocale()] ?? 'English' }} ▾
+                </button>
+                <div x-cloak x-show="open" x-transition.opacity class="absolute end-0 z-40 mt-2 w-40 rounded-2xl border border-slate-100 bg-white p-2 shadow-lg">
+                    @foreach ($languages as $code => $name)
+                        <a href="{{ route('locale.switch', $code) }}" class="flex items-center justify-between rounded-lg px-3 py-2 text-sm hover:bg-slate-50">
+                            {{ $name }} @if (app()->getLocale() === $code)<x-icon name="check-circle" class="text-emerald-500" />@endif
+                        </a>
+                    @endforeach
+                </div>
+            </div>
 
             {{-- Notifications dropdown --}}
             <div x-data="{ open: false }" class="relative">

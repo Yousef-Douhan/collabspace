@@ -10,8 +10,8 @@ Built with Laravel 13 for the **Huma-volve CollabSpace Challenge** · Figma: *Co
 ![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
 ![Alpine.js](https://img.shields.io/badge/Alpine.js-3-8BC0D0?logo=alpinedotjs&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-100_passing-2EA44F)
-![i18n](https://img.shields.io/badge/i18n-English_%7C_Arabic_(RTL)-0B5FFF)
+![Tests](https://img.shields.io/badge/tests-107_passing-2EA44F)
+![i18n](https://img.shields.io/badge/i18n-English_%7C_Arabic_(RTL)_%7C_French-0B5FFF)
 
 [Overview](#-overview) · [Features](#-features) · [Screenshots](#-screenshots) · [Quick start](#-quick-start) · [API](#-rest-api) · [Architecture](#-architecture) · [Testing](#-testing)
 
@@ -27,12 +27,12 @@ CollabSpace gives a team one place to plan work, talk, meet and see progress. On
 
 | Client | Auth | Purpose |
 |---|---|---|
-| **Blade web app** | Session | The full UI from the Figma design, in English and Arabic (RTL) |
-| **REST API** `/api/v1` | Sanctum tokens | For mobile and SPA clients. Ships with a 76-request Postman collection |
+| **Blade web app** | Session | The full UI from the Figma design, in English, Arabic (RTL) and French |
+| **REST API** `/api/v1` | Sanctum tokens | For mobile and SPA clients. Ships with a 77-request Postman collection |
 
 Both clients go through the **same Form Requests, Policies and Services**, so validation, permissions and business rules are defined once.
 
-> **نبذة بالعربية:** منصة تعاون للفرق، فيها إدارة المشاريع، ولوحة مهام Kanban بالسحب والإفلات، ومحادثات مع علامات القراءة، واجتماعات بتقويم أسبوعي وملخص بالذكاء الاصطناعي، وتقارير ورسوم بيانية، ومساعد ذكي يجيب من بيانات الفريق. الواجهة كاملة بالعربية والإنجليزية مع دعم الكتابة من اليمين لليسار، ومعها REST API موثّق و100 اختبار آلي.
+> **نبذة بالعربية:** منصة تعاون للفرق، فيها إدارة المشاريع، ولوحة مهام Kanban بالسحب والإفلات، ومحادثات مع علامات القراءة، واجتماعات بتقويم أسبوعي وملخص بالذكاء الاصطناعي، وتقارير ورسوم بيانية، ومساعد ذكي يجيب من بيانات الفريق. الواجهة كاملة بالعربية والإنجليزية والفرنسية مع دعم الكتابة من اليمين لليسار، ومعها REST API موثّق و107 اختبارات آلية.
 
 ---
 
@@ -41,25 +41,26 @@ Both clients go through the **same Form Requests, Policies and Services**, so va
 ### Work management
 
 - **Projects:** status, priority, start and deadline dates, live completion %, members with roles (owner, manager, member), and a Markdown wiki.
-- **Kanban tasks:** drag & drop across *To-do → In Progress → In Review → Completed*. Tasks have priorities, tracks (UI/UX, Front End, Back End, Graphic Design), assignees and a reviewer, progress, estimated hours, due dates with overdue highlighting, comments and attachments.
+- **Kanban tasks:** filters by project, my tasks, overdue or due this week, and priority. Drag & drop across *To-do → In Progress → In Review → Completed*. Tasks have priorities, tracks (UI/UX, Front End, Back End, Graphic Design), assignees and a reviewer, progress, estimated hours, due dates with overdue highlighting, comments and attachments.
 - **Files:** private per-project and per-task storage. Downloads are allowed only for members.
 
 ### Communication
 
 - **Chats:** direct messages and group or project channels, attachments, editing and deleting your own messages, read receipts ✓ / ✓✓, unread counters, and pin or archive per user. Open threads update live every few seconds, with no page reload.
-- **Meetings:** a weekly calendar, scheduling with attendees and reminders, Accept or Decline, shared notes, comments, attachments and transcript search.
+- **Meetings:** a weekly calendar; a *New Meeting* form with date, time and duration, guests, a note, a location, a reminder, notifications by **in-app, email or Slack**, and attachments; Accept or Decline, shared notes, comments, attachments and transcript search.
 - **Notifications:** task assigned, task overdue, meeting invitation and meeting reminder, in the app and through the API.
 
 ### Intelligence & insight
 
 - **🤖 Ask AI:** a chat assistant that answers questions about the user's own projects, tasks and meetings, in English or Arabic.
 - **✨ Meeting AI summary:** one click turns the transcript into a summary and key points.
-- **Dashboard:** stats with month-over-month change, a 6-month activity chart, workload per member and upcoming meetings.
-- **Reports:** completion and activity KPIs, three charts, per-project and per-member tables, saved reports and CSV export.
+- **Dashboard:** stats with month-over-month change and a completion gauge; an activity chart with *All Projects* and *Duration* menus (today, this week, this month, last three months, this year); a *Teams* card filtered by track with *Leader* badges; upcoming meetings with attendees.
+- **Reports:** completion and activity KPIs, three charts (worker activity monthly or weekly), per-project and per-member tables, **AI-drafted report notes**, *Print / Save PDF*, saved reports and CSV export.
 
 ### Platform
 
-- **Bilingual UI:** a one-click English ⇄ العربية switch with a full right-to-left layout, Arabic dates, Arabic validation messages and Arabic chart axes.
+- **Three languages:** an English / العربية / Français menu, with a full right-to-left layout for Arabic and translated dates, validation messages and chart axes.
+- **Search:** global search, with a *Recent Searches* list under the search bar.
 - **Profiles:** completed tasks, hours worked, recent activity, avatar, and a password change.
 
 ### Administration
@@ -134,7 +135,12 @@ Ask AI and meeting summaries need a provider key. The rest of the app works with
 AI_PROVIDER=gemini        # gemini | openai | anthropic
 AI_API_KEY=your-key-here
 AI_MODEL=                 # optional, default for Gemini: gemini-3.5-flash
+
+# optional: post meeting invitations and reminders to a Slack channel
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/…
 ```
+
+Email notifications use Laravel's mailer (`MAIL_MAILER=log` writes them to `storage/logs` during development).
 
 A free Gemini key is available from [Google AI Studio](https://aistudio.google.com/).
 
@@ -256,13 +262,14 @@ tests/Feature/                Api/ · Web/
 php artisan test
 ```
 
-**100 tests, all passing.** The suite runs on in-memory SQLite and fakes every AI call, so it needs no database or API key.
+**107 tests, all passing.** The suite runs on in-memory SQLite and fakes every AI call, so it needs no database or API key.
 
 | Suite | Coverage |
 |---|---|
 | `Feature/Api/*` (14 files) | Auth, projects and roles, tasks and Kanban ordering, files, chats and receipts, meetings and reminders, AI, notifications, dashboard, reports, search, and permission boundaries |
 | `Feature/Web/WebPagesTest` | Every Blade page renders; login and logout; Kanban move; forms; live chat polling; access control |
 | `Feature/Web/LocaleTest` | Language switching, RTL on every page, Arabic validation, API `Accept-Language` |
+| `Feature/FigmaExtrasTest` | Dashboard duration and team filters, the overdue filter, the New Meeting form (duration, attachments, email and Slack), report print and AI draft, the French UI |
 | `Feature/AdminTest` | Admin-only access, role changes, the last-admin and self-protection rules, deactivation ending web and API sessions, admin API |
 | `Feature/DatabaseSeederTest` | The demo workspace is consistent |
 

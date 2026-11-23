@@ -22,6 +22,8 @@ class UpdateMeetingRequest extends FormRequest
             'starts_at' => ['sometimes', 'required', 'date'],
             'ends_at' => ['sometimes', 'required', 'date', 'after:starts_at'],
             'reminder_minutes' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:10080'],
+            'notify_channels' => ['nullable', 'array'],
+            'notify_channels.*' => ['string', 'in:app,email,slack'],
             'transcript' => ['sometimes', 'nullable', 'string', 'max:200000'],
             'attendees' => ['sometimes', 'nullable', 'array'],
             'attendees.*' => ['integer', 'distinct', 'exists:users,id'],

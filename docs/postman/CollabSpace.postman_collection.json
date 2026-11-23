@@ -351,7 +351,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/dashboard?period=month",
+              "raw": "{{base_url}}/dashboard?period=year&track=",
               "host": [
                 "{{base_url}}"
               ],
@@ -361,7 +361,13 @@
               "query": [
                 {
                   "key": "period",
-                  "value": "month"
+                  "value": "year",
+                  "description": "today|week|month|quarter|year|all"
+                },
+                {
+                  "key": "track",
+                  "value": "",
+                  "description": "ui_ux|front_end|back_end|graphic_design (Teams card)"
                 }
               ]
             },
@@ -1663,7 +1669,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"project_id\": \"{{project_id}}\",\n  \"title\": \"Sprint review\",\n  \"agenda\": \"Review the board\",\n  \"location\": \"Meeting room\",\n  \"meeting_link\": \"https://meet.google.com/abc-defg-hij\",\n  \"starts_at\": \"2026-11-24 13:00:00\",\n  \"ends_at\": \"2026-11-24 14:00:00\",\n  \"reminder_minutes\": 60,\n  \"attendees\": []\n}",
+              "raw": "{\n  \"project_id\": \"{{project_id}}\",\n  \"title\": \"Sprint review\",\n  \"agenda\": \"Review the board\",\n  \"location\": \"Meeting room\",\n  \"meeting_link\": \"https://meet.google.com/abc-defg-hij\",\n  \"starts_at\": \"2026-11-24 13:00:00\",\n  \"ends_at\": \"2026-11-24 14:00:00\",\n  \"reminder_minutes\": 60,\n  \"attendees\": [],\n  \"notify_channels\": [\n    \"email\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2329,6 +2335,42 @@
               ]
             },
             "description": ""
+          }
+        },
+        {
+          "name": "AI draft report notes",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/draft",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "draft"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"project_progress\",\n  \"project_id\": null,\n  \"period_start\": null,\n  \"period_end\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "AI-written notes for the 'Submit a detailed report' form (needs AI_API_KEY)."
           }
         }
       ]

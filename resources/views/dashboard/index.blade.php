@@ -22,7 +22,7 @@
                      :progress="$s['total'] ? $s['in_progress'] / $s['total'] * 100 : 0" :progress-label="$s['in_progress'].'/'.$s['total']" />
         <x-stat-card label="Completed" :value="$s['completed']" :change="$c['completed']" icon="check-circle" tone="emerald"
                      :progress="$s['total'] ? $s['completed'] / $s['total'] * 100 : 0" :progress-label="$s['completed'].'/'.$s['total']" />
-        <x-stat-card label="Completion Rate" :value="$s['completion_rate'].'%'" :change="$c['completion_rate_points']" suffix=" pts" icon="pie" tone="violet" />
+        <x-stat-card label="Completion Rate" :value="$s['completion_rate'].'%'" :change="$c['completion_rate_points']" suffix=" pts" :gauge="$s['completion_rate']" tone="violet" />
     </div>
 
     <div class="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-4">
@@ -31,9 +31,16 @@
             <div class="mb-3 flex items-center justify-between">
                 <h2 class="font-semibold">{{ __('Project overview') }}</h2>
                 <form class="flex gap-2">
+                    @if ($d['track'])<input type="hidden" name="track" value="{{ $d['track'] }}">@endif
                     <select name="project_id" onchange="this.form.submit()" class="rounded-full border-0 bg-slate-100 px-3 py-1 text-xs">
                         <option value="">{{ __('All Projects') }}</option>
                         @foreach ($projects as $p)<option value="{{ $p->id }}" @selected($projectId === $p->id)>{{ $p->name }}</option>@endforeach
+                    </select>
+                    {{-- Figma "Duration" menu --}}
+                    <select name="period" onchange="this.form.submit()" class="rounded-full border-0 bg-slate-100 px-3 py-1 text-xs">
+                        @foreach (['today' => 'Today', 'week' => 'This Week', 'month' => 'This Month', 'quarter' => 'Last Three Months', 'year' => 'This Year'] as $value => $label)
+                            <option value="{{ $value }}" @selected($d['period'] === $value)>{{ __($label) }}</option>
+                        @endforeach
                     </select>
                 </form>
             </div>
@@ -54,6 +61,7 @@
                             <span class="text-xs text-slate-500">{{ $p['completion_percentage'] }}%</span>
                         </div>
                         <x-progress :value="$p['completion_percentage']" color="bg-violet-500" />
+                        <div class="mt-1.5 text-[11px] text-slate-500">{{ __('Task') }}: {{ $p['completed_tasks'] }}/{{ $p['tasks'] }}</div>
                     </a>
                 @empty
                     <x-empty>{{ __('No active projects.') }}</x-empty>
@@ -83,7 +91,7 @@
                         <span class="{{ $tone }} flex size-9 shrink-0 items-center justify-center rounded-lg text-[10px] font-bold uppercase">{{ $ext ?: 'file' }}</span>
                         <div class="min-w-0 flex-1">
                             <div class="truncate font-medium">{{ $f['name'] }}</div>
-                            <div class="text-xs text-slate-500">{{ $f['project'] }} · {{ $f['size'] }}</div>
+                            <div class="truncate text-xs text-slate-500">{{ __('By :name', ['name' => $f['uploaded_by'] ?? '—']) }} · {{ \Illuminate\Support\Carbon::parse($f['created_at'])->translatedFormat('H:i') }} · {{ $f['size'] }}</div>
                         </div>
                         <a href="{{ route('files.download', $f['id']) }}" class="text-slate-400 hover:text-brand" title="{{ __('Download') }}"><x-icon name="download" /></a>
                     </div>
@@ -118,22 +126,38 @@
             </div>
         </div>
 
-        {{-- Teams --}}
+        {{-- Teams (Figma: track menu, Leader badge, Name / Tasks columns) --}}
         <div class="card p-5">
-            <h2 class="mb-3 font-semibold">{{ __('Teams') }}</h2>
+            <div class="mb-3 flex items-center justify-between">
+                <h2 class="font-semibold">{{ __('Teams') }}</h2>
+                <form>
+                    @if ($projectId)<input type="hidden" name="project_id" value="{{ $projectId }}">@endif
+                    <input type="hidden" name="period" value="{{ $d['period'] }}">
+                    <select name="track" onchange="this.form.submit()" class="rounded-full border-0 bg-slate-100 px-3 py-1 text-xs">
+                        <option value="">{{ __('All teams') }}</option>
+                        @foreach (\App\Enums\Track::cases() as $tr)<option value="{{ $tr->value }}" @selected($d['track'] === $tr->value)>{{ $tr->label() }}</option>@endforeach
+                    </select>
+                </form>
+            </div>
+            <div class="mb-2 flex justify-between text-[11px] text-slate-400"><span>{{ __('Name') }}</span><span>{{ __('Tasks') }}</span></div>
             <div class="space-y-3">
-                @foreach ($d['team_status'] as $m)
+                @forelse ($d['team_status'] as $m)
                     <a href="{{ route('members.show', $m['id']) }}" class="flex items-center gap-3 hover:opacity-80">
-                        <x-avatar :user="(object) ['id' => $m['id'], 'name' => $m['name'], 'avatar_url' => null]" size="8" />
+                        <x-avatar :user="(object) $m" size="8" />
                         <div class="min-w-0 flex-1">
-                            <div class="flex items-center justify-between text-sm">
-                                <span class="truncate font-medium">{{ $m['name'] }}</span>
-                                <span class="text-xs text-slate-500">{{ $m['completed_tasks'] }}/{{ $m['tasks'] }}</span>
+                            <div class="flex items-center justify-between gap-2 text-sm">
+                                <span class="flex min-w-0 items-center gap-1.5">
+                                    <span class="truncate font-medium">{{ $m['name'] }}</span>
+                                    @if ($m['is_leader'])<span class="chip shrink-0 bg-brand-50 text-[10px] text-brand">{{ __('Leader') }}</span>@endif
+                                </span>
+                                <span class="shrink-0 text-xs text-slate-500">{{ $m['completed_tasks'] }}/{{ $m['tasks'] }}</span>
                             </div>
                             <x-progress class="mt-1" :value="$m['tasks'] ? $m['completed_tasks'] / $m['tasks'] * 100 : 0" />
                         </div>
                     </a>
-                @endforeach
+                @empty
+                    <x-empty class="py-4">{{ __('No members in this team.') }}</x-empty>
+                @endforelse
             </div>
         </div>
 
@@ -146,10 +170,18 @@
             <div class="space-y-3">
                 @forelse ($d['upcoming_meetings'] as $m)
                     <a href="{{ route('meetings.show', $m['id']) }}" class="block rounded-xl border border-slate-100 p-3 hover:bg-slate-50">
-                        <div class="text-sm font-medium">{{ $m['title'] }}</div>
-                        <div class="mt-1 text-xs text-slate-500">
-                            {{ \Illuminate\Support\Carbon::parse($m['starts_at'])->translatedFormat('D, M d · H:i') }} · {{ $m['project'] ?? __('General') }}
+                        @php $start = \Illuminate\Support\Carbon::parse($m['starts_at']); @endphp
+                        <div class="flex items-start justify-between gap-2">
+                            <span class="text-sm font-medium">{{ $m['title'] }}</span>
+                            <span class="inline-flex shrink-0 items-center gap-1 text-[11px] text-slate-500">
+                                {{ $start->isToday() ? __('Today') : $start->translatedFormat('M d') }} <x-icon name="calendar" size="3.5" />
+                            </span>
                         </div>
+                        <div class="mt-2 flex items-center justify-between">
+                            <x-avatars :users="collect($m['attendees'])->map(fn ($a) => (object) $a)" size="7" />
+                            <span class="text-[11px] text-slate-500" dir="ltr">{{ $start->format('H:i') }} – {{ \Illuminate\Support\Carbon::parse($m['ends_at'])->format('H:i') }}</span>
+                        </div>
+                        <div class="mt-1 text-[11px] text-slate-400">{{ $m['project'] ?? __('General') }}</div>
                     </a>
                 @empty
                     <x-empty>{{ __('No upcoming meetings.') }}</x-empty>

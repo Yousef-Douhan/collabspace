@@ -50,7 +50,7 @@ class ProfileTest extends TestCase
     {
         $this->withToken($this->token)->patchJson('/api/v1/me', [
             'availability' => 'sleeping',
-            'locale' => 'fr',
+            'locale' => 'de', // en, ar and fr are supported
         ])->assertUnprocessable()
             ->assertJsonValidationErrors(['availability', 'locale']);
     }

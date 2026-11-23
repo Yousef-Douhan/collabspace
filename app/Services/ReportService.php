@@ -170,12 +170,57 @@ class ReportService
                 return ['month' => $m->translatedFormat('M'), 'progress' => Trend::rate($done->count(), $existing->count())];
             })->values()->all(),
 
-            // "Worker Activity Rate": number of actions logged by the team per month.
+            // "Worker Activity Rate": number of actions logged by the team per month…
             'worker_activity' => $months->map(fn (CarbonImmutable $m) => [
                 'month' => $m->translatedFormat('M'),
                 'actions' => $activity->filter(fn ($a) => $a->created_at->isSameMonth($m))->count(),
             ])->values()->all(),
+
+            // …and per week for the last 8 weeks (Figma "Monthly ▾" menu on that chart).
+            'worker_activity_weekly' => collect(range(7, 0))->map(function (int $back) use ($activity) {
+                $from = CarbonImmutable::now()->startOfWeek()->subWeeks($back);
+                $to = $from->addWeek();
+
+                return [
+                    'month' => $from->translatedFormat('M j'),
+                    'actions' => $activity->filter(fn ($a) => $a->created_at >= $from && $a->created_at < $to)->count(),
+                ];
+            })->values()->all(),
         ];
+    }
+
+    /**
+     * Drafts the "Add Note" text of a detailed report with the AI model, from the same
+     * numbers the Report screen shows. The user can edit it before submitting.
+     *
+     * @throws \RuntimeException when the AI is not configured or fails
+     */
+    public function aiDraft(User $user, ReportType $type, ?int $projectId, ?CarbonInterface $from, ?CarbonInterface $to): string
+    {
+        $o = $this->overview($user, $projectId, $from, $to);
+        $facts = json_encode([
+            'report_type' => $type->label(),
+            'period' => $o['period'],
+            'totals' => $o['totals'],
+            'kpis' => $o['kpis'],
+            'projects' => $o['project_progress'],
+            'team' => collect($o['team_performance'])->map(fn ($m) => collect($m)->only(['name', 'assigned', 'completed', 'overdue', 'completion_rate'])),
+        ], JSON_UNESCAPED_UNICODE);
+
+        $text = trim(app(AiService::class)->chat(
+            system: 'You write short, factual status reports for a project-management app. '
+                .'Use only the numbers given. 4-7 sentences or bullets: overall progress, risks (overdue work), '
+                .'who is doing well or needs help, and 1-2 next steps. Plain text, no markdown headings. '
+                .'Write in '.(['ar' => 'Arabic', 'fr' => 'French'][app()->getLocale()] ?? 'English').'.',
+            user: $facts,
+            maxTokens: 500,
+        ));
+
+        if ($text === '') {
+            throw new \RuntimeException(__('The AI request failed.'));
+        }
+
+        return $text;
     }
 
     private function rate(int $done, int $total): int

@@ -19,6 +19,7 @@ return [
     'different' => 'يجب أن يختلف :attribute عن :other.',
     'distinct' => 'حقل :attribute يحتوي على قيمة مكررة.',
     'email' => 'يجب أن يكون :attribute بريداً إلكترونياً صحيحاً.',
+    'enum' => 'القيمة المختارة في :attribute غير صالحة.',
     'exists' => 'القيمة المختارة في :attribute غير صالحة.',
     'file' => 'يجب أن يكون :attribute ملفاً.',
     'image' => 'يجب أن يكون :attribute صورة.',

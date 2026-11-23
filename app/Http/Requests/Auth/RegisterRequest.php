@@ -23,7 +23,7 @@ class RegisterRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:30'],
             'job_title' => ['nullable', 'string', 'max:120'],
             'track' => ['nullable', Rule::enum(Track::class)],
-            'locale' => ['nullable', Rule::in(['en', 'ar'])],
+            'locale' => ['nullable', Rule::in(['en', 'ar', 'fr'])],
             'device_name' => ['nullable', 'string', 'max:100'],
         ];
     }

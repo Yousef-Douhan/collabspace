@@ -28,6 +28,10 @@
             <input type="date" name="from" value="{{ request('from') }}" class="input w-auto rounded-full">
             <input type="date" name="to" value="{{ request('to') }}" class="input w-auto rounded-full">
             <button class="btn-ghost">{{ __('Apply') }}</button>
+            {{-- Figma UX: "Print / Save Report" — the browser's print dialog also saves as PDF --}}
+            <button type="button" onclick="window.print()" class="btn-primary inline-flex items-center gap-1.5 print:hidden">
+                <x-icon name="download" /> {{ __('Print / Save PDF') }}
+            </button>
         </form>
     </x-page-header>
 
@@ -42,13 +46,27 @@
             <h2 class="mb-3 font-semibold">{{ __('Task Completion Time vs Deadline') }}</h2>
             <div class="h-56"><canvas x-data="chart(@js($deadline))"></canvas></div>
         </div>
-        <div class="card p-5">
+        <div class="card relative p-5">
             <h2 class="mb-3 font-semibold">{{ __('Projects Progress') }}</h2>
+            <form class="absolute end-5 top-5 print:hidden">
+                @foreach (request()->only('from', 'to') as $k2 => $v2)<input type="hidden" name="{{ $k2 }}" value="{{ $v2 }}">@endforeach
+                <select name="project_id" onchange="this.form.submit()" class="rounded-full border-0 bg-slate-100 px-3 py-1 text-xs">
+                    <option value="">{{ __('All Projects') }}</option>
+                    @foreach ($projects as $p)<option value="{{ $p->id }}" @selected(request('project_id') == $p->id)>{{ $p->name }}</option>@endforeach
+                </select>
+            </form>
             <div class="h-56"><canvas x-data="chart(@js($line(array_column($ch['projects_progress'], 'month'), array_column($ch['projects_progress'], 'progress'), __('Progress %'), '#0B5FFF')))"></canvas></div>
         </div>
-        <div class="card p-5">
+        <div class="card relative p-5">
             <h2 class="mb-3 font-semibold">{{ __('Worker Activity Rate') }}</h2>
-            <div class="h-56"><canvas x-data="chart(@js($line(array_column($ch['worker_activity'], 'month'), array_column($ch['worker_activity'], 'actions'), __('Actions'), '#8B5CF6')))"></canvas></div>
+            <div x-data="{ by: 'monthly' }">
+                <select x-model="by" class="absolute end-5 top-5 rounded-full border-0 bg-slate-100 px-3 py-1 text-xs print:hidden">
+                    <option value="monthly">{{ __('Monthly') }}</option>
+                    <option value="weekly">{{ __('Weekly') }}</option>
+                </select>
+                <div x-show="by === 'monthly'" class="h-56"><canvas x-data="chart(@js($line(array_column($ch['worker_activity'], 'month'), array_column($ch['worker_activity'], 'actions'), __('Actions'), '#8B5CF6')))"></canvas></div>
+                <div x-cloak x-show="by === 'weekly'" class="h-56"><canvas x-data="chart(@js($line(array_column($ch['worker_activity_weekly'], 'month'), array_column($ch['worker_activity_weekly'], 'actions'), __('Actions'), '#8B5CF6')))"></canvas></div>
+            </div>
         </div>
     </div>
 
@@ -86,9 +104,29 @@
     </div>
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <form method="POST" action="{{ route('reports.store') }}" class="card space-y-3 p-5">
+        <form method="POST" action="{{ route('reports.store') }}" class="card space-y-3 p-5 print:hidden"
+              x-data="{
+                  busy: false, error: '',
+                  async draft() {
+                      this.busy = true; this.error = '';
+                      const f = new FormData(this.$el);
+                      try {
+                          const { data } = await window.api(@js(route('reports.draft')), { method: 'POST', body: {
+                              type: f.get('type'), project_id: f.get('project_id') || null,
+                              period_start: f.get('period_start') || null, period_end: f.get('period_end') || null,
+                          } });
+                          this.$refs.notes.value = data.notes;
+                      } catch (e) { this.error = e.message || @js(__('The AI request failed.')); }
+                      this.busy = false;
+                  },
+              }">
             @csrf
-            <h2 class="font-semibold">{{ __('Submit a detailed report') }}</h2>
+            <div class="flex items-center justify-between">
+                <h2 class="font-semibold">{{ __('Submit a detailed report') }}</h2>
+                <button type="button" @click="draft()" :disabled="busy" class="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand disabled:opacity-60" title="{{ __('Write the notes with AI') }}">
+                    <x-icon name="sparkles" size="3.5" /><span x-text="busy ? @js(__('Writing…')) : @js(__('Write with AI'))"></span>
+                </button>
+            </div>
             <div class="grid grid-cols-2 gap-3">
                 <div><label class="label">{{ __('Report type') }}</label>
                     <select name="type" class="input">@foreach (\App\Enums\ReportType::cases() as $t)<option value="{{ $t->value }}">{{ $t->label() }}</option>@endforeach</select>
@@ -99,7 +137,8 @@
                 <div><label class="label">{{ __('From') }}</label><input type="date" name="period_start" class="input"></div>
                 <div><label class="label">{{ __('To') }}</label><input type="date" name="period_end" class="input"></div>
             </div>
-            <div><label class="label">{{ __('Notes') }}</label><textarea name="notes" rows="3" dir="auto" class="input" placeholder="{{ __('Anything the reader should know…') }}"></textarea></div>
+            <div><label class="label">{{ __('Notes') }}</label><textarea x-ref="notes" name="notes" rows="5" dir="auto" class="input" placeholder="{{ __('Anything the reader should know…') }}"></textarea>
+                <p x-cloak x-show="error" x-text="error" class="mt-1 text-xs text-rose-600"></p></div>
             <button class="btn-primary">{{ __('Submit report') }}</button>
         </form>
 
@@ -108,7 +147,7 @@
             @forelse ($saved as $r)
                 <div class="flex items-center gap-3 border-b border-slate-50 py-2.5 text-sm last:border-0">
                     <div class="min-w-0 flex-1">
-                        <div class="font-medium">{{ $r->type->label() }} <span class="text-slate-400">· {{ $r->project?->name ?? 'All projects' }}</span></div>
+                        <div class="font-medium">{{ $r->type->label() }} <span class="text-slate-400">· {{ $r->project?->name ?? __('All projects') }}</span></div>
                         <div class="text-xs text-slate-500">{{ $r->created_at->translatedFormat('M d, Y H:i') }}</div>
                     </div>
                     <a href="{{ route('reports.export', $r) }}" class="text-xs text-brand">CSV</a>

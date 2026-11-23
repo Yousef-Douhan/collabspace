@@ -15,7 +15,15 @@
 <body class="min-h-screen bg-canvas font-sans text-ink antialiased">
     <div class="flex items-center justify-between px-10 py-6">
         <span class="text-lg font-semibold">Collabspace</span>
-        <a href="{{ route('locale.switch', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" class="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs text-slate-600 hover:border-brand hover:text-brand">{{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}</a>
+        @php $languages = ['en' => 'English', 'ar' => 'العربية', 'fr' => 'Français']; @endphp
+        <div x-data="{ open: false }" class="relative" @click.outside="open = false">
+            <button type="button" @click="open = !open" class="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs text-slate-600 hover:border-brand hover:text-brand">{{ $languages[app()->getLocale()] ?? 'English' }} ▾</button>
+            <div x-cloak x-show="open" class="absolute end-0 z-40 mt-2 w-36 rounded-2xl border border-slate-100 bg-white p-2 shadow-lg">
+                @foreach ($languages as $code => $name)
+                    <a href="{{ route('locale.switch', $code) }}" @class(['block rounded-lg px-3 py-2 text-sm hover:bg-slate-50', 'font-semibold text-brand' => app()->getLocale() === $code])>{{ $name }}</a>
+                @endforeach
+            </div>
+        </div>
     </div>
     <div class="flex min-h-[75vh] items-center justify-center px-4">
         <div class="w-full max-w-md rounded-3xl bg-white p-10 shadow-xl shadow-slate-200/60">

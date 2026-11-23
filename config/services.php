@@ -39,6 +39,8 @@ return [
     ],
 
     'slack' => [
+        // Incoming-webhook URL for meeting invitations/reminders posted to a channel (optional).
+        'webhook_url' => env('SLACK_WEBHOOK_URL'),
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),

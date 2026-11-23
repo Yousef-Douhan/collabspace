@@ -28,10 +28,17 @@ class Meeting extends Model
         'ends_at',
         'reminder_minutes',
         'reminder_sent_at',
+        'notify_channels',
         'transcript',
         'ai_summary',
         'key_points',
     ];
+
+    /** Channels chosen in the "New Meeting" form, besides the in-app notification. */
+    public function notifies(string $channel): bool
+    {
+        return in_array($channel, $this->notify_channels ?? [], true);
+    }
 
     protected function casts(): array
     {
@@ -41,6 +48,7 @@ class Meeting extends Model
             'reminder_sent_at' => 'datetime',
             'reminder_minutes' => 'integer',
             'key_points' => 'array',
+            'notify_channels' => 'array',
         ];
     }
 

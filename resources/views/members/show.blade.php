@@ -3,7 +3,10 @@
         <x-avatar :user="$member" size="16" />
         <div class="flex-1">
             <h1 class="text-xl font-semibold">{{ $member->name }}</h1>
-            <div class="text-sm text-slate-500">{{ $member->job_title }} · {{ $member->track?->label() }}</div>
+            <div class="flex flex-wrap items-center gap-x-3 text-sm text-slate-500">
+                <span>{{ $member->job_title }} · {{ $member->track?->label() }}</span>
+                <span class="inline-flex items-center gap-1"><x-icon name="calendar" size="3.5" />{{ __('Joined :date', ['date' => ($member->joined_at ?? $member->created_at)->translatedFormat('M Y')]) }}</span>
+            </div>
             <div class="mt-1 text-xs text-slate-400">{{ $member->email }}@if ($member->phone) · {{ $member->phone }}@endif</div>
         </div>
         <span @class(['chip', 'bg-emerald-50 text-emerald-600' => $member->availability?->value === 'available', 'bg-amber-50 text-amber-600' => $member->availability?->value === 'busy', 'bg-slate-100 text-slate-500' => $member->availability?->value === 'away'])>{{ $member->availability?->label() }}</span>

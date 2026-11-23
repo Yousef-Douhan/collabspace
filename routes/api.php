@@ -112,6 +112,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         // --- Dashboard, reports, search, meta -----------------------------
         Route::get('dashboard', DashboardController::class)->name('dashboard');
         Route::get('reports/overview', [ReportController::class, 'overview'])->name('reports.overview');
+        // Same JSON action the web form calls: AI-written notes for a detailed report.
+        Route::post('reports/draft', [\App\Http\Controllers\Web\ReportController::class, 'draft'])->name('reports.draft')->middleware('throttle:10,1');
         Route::get('reports/{report}/export', [ReportController::class, 'export'])->name('reports.export');
         Route::apiResource('reports', ReportController::class)->except(['update']);
         Route::get('search', SearchController::class)->name('search');

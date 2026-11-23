@@ -97,6 +97,7 @@ Route::middleware('auth')->group(function () {
     // Reports
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
     Route::post('reports', [ReportController::class, 'store'])->name('reports.store');
+    Route::post('reports/draft', [ReportController::class, 'draft'])->name('reports.draft')->middleware('throttle:10,1');
     Route::delete('reports/{report}', [ReportController::class, 'destroy'])->name('reports.destroy');
     Route::get('reports/{report}/export', [\App\Http\Controllers\Api\V1\ReportController::class, 'export'])->name('reports.export');
 

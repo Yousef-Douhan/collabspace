@@ -242,6 +242,12 @@ Auth: `Authorization: Bearer <token>` (Sanctum). Errors: standard Laravel JSON (
 | PATCH | `/admin/users/{user}/role` | `{role}`; not yourself, never the last admin |
 | PATCH | `/admin/users/{user}/status` | `{active}`; deactivating revokes API tokens |
 
+### Figma review additions
+| GET | `/dashboard?period=today\|week\|month\|quarter\|year\|all&track=` | chart buckets follow the period; Teams card filtered by track, `is_leader` |
+|---|---|---|
+| POST | `/reports/draft` | `{type, project_id?, period_start?, period_end?}` → AI-written notes |
+| POST | `/meetings` | also accepts `notify_channels[]` = `app` · `email` · `slack` (mail + Slack webhook) |
+
 ### Comments (tasks & meetings)
 | GET/POST | `/tasks/{task}/comments` | Kanban card comment count = `comments_count` |
 |---|---|---|
