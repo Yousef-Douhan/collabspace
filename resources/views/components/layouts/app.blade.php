@@ -21,6 +21,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @if (config('broadcasting.default') === 'reverb' && config('broadcasting.connections.reverb.key'))
+        <meta name="reverb" content="{{ json_encode(['key' => config('broadcasting.connections.reverb.key')] + config('broadcasting.client')) }}">
+    @endif
     <title>{{ $title ? $title.' · ' : '' }}Collabspace</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @if (app()->getLocale() === 'ar')

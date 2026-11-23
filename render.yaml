@@ -1,0 +1,56 @@
+# Render Blueprint — free public demo of CollabSpace.
+# Dashboard → New → Blueprint → pick this repository. Only AI_API_KEY is asked for (optional).
+services:
+  - type: web
+    name: collabspace
+    runtime: docker
+    plan: free
+    region: frankfurt
+    healthCheckPath: /up
+    autoDeploy: true
+    envVars:
+      - key: APP_NAME
+        value: CollabSpace
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: LOG_CHANNEL
+        value: stderr
+      # Free instances have no persistent disk: SQLite + fresh demo data on every boot.
+      - key: DB_CONNECTION
+        value: sqlite
+      - key: DEMO_RESET
+        value: "true"
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: MAIL_MAILER
+        value: log
+      # Real-time: Reverb runs inside the container; browsers connect via wss://<host>/app
+      - key: BROADCAST_CONNECTION
+        value: reverb
+      - key: REVERB_APP_ID
+        value: "100001"
+      - key: REVERB_APP_KEY
+        generateValue: true
+      - key: REVERB_APP_SECRET
+        generateValue: true
+      - key: REVERB_HOST
+        value: 127.0.0.1
+      - key: REVERB_PORT
+        value: "8080"
+      - key: REVERB_SCHEME
+        value: http
+      - key: REVERB_CLIENT_PORT
+        value: "443"
+      - key: REVERB_CLIENT_SCHEME
+        value: https
+      # AI (Ask AI, summaries, task planner) — paste your key in the dashboard, never in git.
+      - key: AI_PROVIDER
+        value: gemini
+      - key: AI_API_KEY
+        sync: false

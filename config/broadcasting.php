@@ -28,6 +28,23 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Browser-side WebSocket address
+    |--------------------------------------------------------------------------
+    |
+    | Where browsers reach Reverb. Locally that is the Reverb server itself; behind a
+    | proxy (Docker / Render) it is the public site on 443 while the server-to-server
+    | REVERB_HOST stays 127.0.0.1. Rendered into a <meta> tag, so no rebuild is needed.
+    |
+    */
+
+    'client' => [
+        'host' => env('REVERB_CLIENT_HOST') ?: env('REVERB_HOST'),
+        'port' => (int) (env('REVERB_CLIENT_PORT') ?: env('REVERB_PORT', 443)),
+        'scheme' => env('REVERB_CLIENT_SCHEME') ?: env('REVERB_SCHEME', 'https'),
+    ],
+
     'connections' => [
 
         'reverb' => [

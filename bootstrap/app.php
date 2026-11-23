@@ -17,6 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Behind Render / Docker proxies: trust X-Forwarded-* so URLs and assets stay https.
+        $middleware->trustProxies(at: '*');
         $middleware->web(append: [SetLocale::class, EnsureActiveUser::class]);
         $middleware->alias(['admin' => EnsureAdmin::class]);
         $middleware->api(append: [SetLocale::class]);

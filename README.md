@@ -11,10 +11,12 @@ Built with Laravel 13 for the **Huma-volve CollabSpace Challenge** · Figma: *Co
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
 ![Alpine.js](https://img.shields.io/badge/Alpine.js-3-8BC0D0?logo=alpinedotjs&logoColor=white)
 [![CI](https://github.com/Yousef-Douhan/collabspace/actions/workflows/ci.yml/badge.svg)](https://github.com/Yousef-Douhan/collabspace/actions/workflows/ci.yml)
-![Tests](https://img.shields.io/badge/tests-113_passing-2EA44F)
+![Tests](https://img.shields.io/badge/tests-120_passing-2EA44F)
+![Realtime](https://img.shields.io/badge/realtime-Laravel_Reverb-FF2D20?logo=laravel&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-one_command-2496ED?logo=docker&logoColor=white)
 ![i18n](https://img.shields.io/badge/i18n-English_%7C_Arabic_(RTL)_%7C_French-0B5FFF)
 
-[Overview](#-overview) · [Features](#-features) · [Screenshots](#-screenshots) · [Quick start](#-quick-start) · [API](#-rest-api) · [Architecture](#-architecture) · [Testing](#-testing)
+[Overview](#-overview) · [Features](#-features) · [Screenshots](#-screenshots) · [Quick start](#-quick-start) · [Docker](#-docker-one-command) · [API](#-rest-api) · [Architecture](#-architecture) · [Testing](#-testing)
 
 <img src="docs/screenshots/dashboard.png" alt="CollabSpace dashboard" width="100%">
 
@@ -33,7 +35,7 @@ CollabSpace gives a team one place to plan work, talk, meet and see progress. On
 
 Both clients go through the **same Form Requests, Policies and Services**, so validation, permissions and business rules are defined once.
 
-> **نبذة بالعربية:** منصة تعاون للفرق، فيها إدارة المشاريع، ولوحة مهام Kanban بالسحب والإفلات، ومحادثات مع علامات القراءة، واجتماعات بتقويم أسبوعي وملخص بالذكاء الاصطناعي، وتقارير ورسوم بيانية، ومساعد ذكي يجيب من بيانات الفريق. الواجهة كاملة بالعربية والإنجليزية والفرنسية مع دعم الكتابة من اليمين لليسار، ومعها REST API موثّق و113 اختباراً آلياً.
+> **نبذة بالعربية:** منصة تعاون للفرق، فيها إدارة المشاريع، ولوحة مهام Kanban بالسحب والإفلات، ومحادثات مع علامات القراءة، واجتماعات بتقويم أسبوعي وملخص بالذكاء الاصطناعي، وتقارير ورسوم بيانية، ومساعد ذكي يجيب من بيانات الفريق. الواجهة كاملة بالعربية والإنجليزية والفرنسية مع دعم الكتابة من اليمين لليسار، ومعها REST API موثّق و120 اختباراً آلياً. الرسائل ولوحة المهام تتحدث فورياً عبر Laravel Reverb، ويعمل المشروع كاملاً بأمر Docker واحد.
 
 ---
 
@@ -47,7 +49,8 @@ Both clients go through the **same Form Requests, Policies and Services**, so va
 
 ### Communication
 
-- **Chats:** direct messages and group or project channels, attachments, editing and deleting your own messages, read receipts ✓ / ✓✓, unread counters, and pin or archive per user. Open threads update live every few seconds, with no page reload.
+- **Chats:** direct messages and group or project channels, attachments, editing and deleting your own messages, read receipts ✓ / ✓✓, unread counters, and pin or archive per user.
+- **⚡ Real-time (Laravel Reverb):** new, edited and deleted messages appear instantly with a *“Sara is typing…”* indicator; a card dragged on the Kanban board slides into place on every teammate's screen with a toast (*“Omar moved a task”*). Private channels reuse the same policies as the pages, and message text never travels over the socket. If the WebSocket server is down, pages fall back to polling and no request ever fails.
 - **Meetings:** a weekly calendar; a *New Meeting* form with date, time and duration, guests, a note, a location, a reminder, notifications by **in-app, email or Slack**, and attachments; Accept or Decline, shared notes, comments, attachments and transcript search.
 - **Notifications:** task assigned, task overdue, meeting invitation and meeting reminder, in the app and through the API.
 
@@ -114,6 +117,8 @@ Open **http://127.0.0.1:8000** and sign in with `admin@collabspace.test` / `pass
 
 During development, run `npm run dev` next to `php artisan serve` so CSS and JS changes reload instantly.
 
+**Real-time (optional):** set `BROADCAST_CONNECTION=reverb` and the `REVERB_*` values in `.env` (see `.env.example`), then run `php artisan reverb:start` in a second terminal. A green **Live** badge appears in the top bar when the WebSocket is connected; without it, chats and the board fall back to polling.
+
 > **File uploads:** the app accepts files up to 20 MB, but PHP's own limit is often 2 MB. If uploads fail, set `upload_max_filesize = 20M` and `post_max_size = 25M` in the `php.ini` shown by `php --ini`, then restart the server.
 
 ### Demo accounts
@@ -157,6 +162,20 @@ Two scheduled jobs run in the background:
 | `tasks:notify-overdue` | daily 09:00 | Notify assignees of overdue tasks |
 
 Run `php artisan schedule:work` locally. In production, use a cron entry that calls `schedule:run` every minute.
+
+---
+
+## 🐳 Docker (one command)
+
+```bash
+git clone https://github.com/Yousef-Douhan/collabspace.git
+cd collabspace
+docker compose up --build
+```
+
+Open **http://localhost:8000** and sign in with `admin@collabspace.test` / `password`. One container runs Nginx, PHP-FPM 8.4, the Reverb WebSocket server and the scheduler (supervisord), on SQLite with the demo data seeded on first start. To enable AI, create a `.env` next to `docker-compose.yml` with `AI_API_KEY=...` before starting.
+
+The same image deploys to **Render** for free: `render.yaml` is a ready Blueprint (*New → Blueprint →* this repo). The public demo resets to clean demo data on every restart.
 
 ---
 
@@ -267,7 +286,7 @@ tests/Feature/                Api/ · Web/
 php artisan test
 ```
 
-**113 tests, all passing.** GitHub Actions runs them, plus a Laravel Pint style check and a production asset build, on every push. The suite runs on in-memory SQLite and fakes every AI call, so it needs no database or API key.
+**120 tests, all passing.** GitHub Actions runs them, plus a Laravel Pint style check and a production asset build, on every push. The suite runs on in-memory SQLite and fakes every AI call, so it needs no database or API key.
 
 | Suite | Coverage |
 |---|---|
@@ -277,6 +296,7 @@ php artisan test
 | `Feature/PlannerTest` | Meeting → tasks and project plans: the AI's output is sanitized (unknown tracks, people outside the project, bad dates), bulk creation, notifications, permissions, friendly errors |
 | `Feature/FigmaExtrasTest` | Dashboard duration and team filters, the overdue filter, the New Meeting form (duration, attachments, email and Slack), report print and AI draft, the French UI |
 | `Feature/AdminTest` | Admin-only access, role changes, the last-admin and self-protection rules, deactivation ending web and API sessions, admin API |
+| `Feature/RealtimeTest` | Chat and Kanban broadcast the right events; only participants / project members can subscribe; the payload carries no message text; a dead WebSocket server never breaks a request |
 | `Feature/DatabaseSeederTest` | The demo workspace is consistent |
 
 ---
@@ -285,11 +305,12 @@ php artisan test
 
 | Layer | Technology |
 |---|---|
-| Backend | PHP 8.4 · Laravel 13 · Sanctum 4 · Eloquent · Notifications · Scheduler |
+| Backend | PHP 8.4 · Laravel 13 · Sanctum 4 · Reverb · Eloquent · Notifications · Scheduler |
 | Database | MySQL / MariaDB (SQLite for tests) |
-| Frontend | Blade components · Tailwind CSS 4 · Alpine.js · SortableJS · Chart.js · Vite 8 |
+| Frontend | Blade components · Tailwind CSS 4 · Alpine.js · Laravel Echo · SortableJS · Chart.js · Vite 8 |
 | AI | Google Gemini (default) · OpenAI · Anthropic, called over plain HTTP |
-| Tooling | PHPUnit · Postman |
+| DevOps | Docker (Nginx + PHP-FPM + Reverb, supervisord) · Render Blueprint · GitHub Actions CI |
+| Tooling | PHPUnit · Pint · Postman |
 
 ---
 

@@ -1,0 +1,45 @@
+# One command: docker compose up --build   →   http://localhost:8000
+# Demo login: admin@collabspace.test / password
+# Optional AI: put AI_API_KEY=... in a .env next to this file (or export it) before starting.
+services:
+  app:
+    build: .
+    image: collabspace
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: 8000
+      APP_NAME: CollabSpace
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8000
+      LOG_CHANNEL: stderr
+
+      DB_CONNECTION: sqlite
+      DB_DATABASE: /var/www/html/database/data/database.sqlite
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: log
+
+      # Real-time (Laravel Reverb runs inside the container, proxied on /app)
+      BROADCAST_CONNECTION: reverb
+      REVERB_APP_ID: "100001"
+      REVERB_APP_KEY: collabspace-local-key
+      REVERB_APP_SECRET: collabspace-local-secret
+      REVERB_HOST: 127.0.0.1
+      REVERB_PORT: "8080"
+      REVERB_SCHEME: http
+      REVERB_CLIENT_HOST: localhost
+      REVERB_CLIENT_PORT: "8000"
+      REVERB_CLIENT_SCHEME: http
+
+      AI_PROVIDER: ${AI_PROVIDER:-gemini}
+      AI_API_KEY: ${AI_API_KEY:-}
+    volumes:
+      - db:/var/www/html/database/data
+      - uploads:/var/www/html/storage/app
+
+volumes:
+  db:
+  uploads:
