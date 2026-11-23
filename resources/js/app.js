@@ -108,6 +108,69 @@ Alpine.data('kanban', ({ projects = [], labels = {} } = {}) => ({
     },
 }));
 
+/* ───────── Theme (dark / light) ─────────
+   The inline <head> script sets html.dark before paint; this keeps the choice, follows the
+   device setting until the user picks one, recolours charts, and prints in light mode. */
+const isDark = () => document.documentElement.classList.contains('dark');
+
+/** Axis, grid and legend colours for the current theme. */
+function themeChart(chart) {
+    const dark = isDark();
+    const tick = dark ? '#8F9CB4' : '#64748B';
+    const grid = dark ? 'rgba(143,156,180,.14)' : '#EEF2F7';
+    Object.values(chart.options.scales ?? {}).forEach((scale) => {
+        scale.ticks = { ...(scale.ticks ?? {}), color: tick };
+        scale.grid = { ...(scale.grid ?? {}), color: grid };
+        scale.border = { ...(scale.border ?? {}), color: grid };
+    });
+    const legend = chart.options.plugins?.legend;
+    if (legend) legend.labels = { ...(legend.labels ?? {}), color: tick };
+    chart.update('none');
+}
+
+function setTheme(dark, { save = true, animate = true } = {}) {
+    const root = document.documentElement;
+    if (animate) {
+        root.classList.add('theme-anim');
+        setTimeout(() => root.classList.remove('theme-anim'), 350);
+    }
+    root.classList.toggle('dark', dark);
+    if (save) {
+        try {
+            localStorage.setItem('cs-theme', dark ? 'dark' : 'light');
+        } catch {
+            // storage blocked: the theme still applies to this page
+        }
+    }
+    Object.values(Chart.instances).forEach(themeChart);
+    window.dispatchEvent(new CustomEvent('theme-changed', { detail: { dark } }));
+}
+
+Alpine.data('themeToggle', () => ({
+    toggle() {
+        setTheme(!isDark());
+    },
+}));
+
+// Follow the device setting while the user hasn't chosen.
+window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', (e) => {
+    let saved = null;
+    try {
+        saved = localStorage.getItem('cs-theme');
+    } catch {}
+    if (!saved) setTheme(e.matches, { save: false });
+});
+
+// Reports → Print / Save PDF always comes out light.
+let darkBeforePrint = false;
+window.addEventListener('beforeprint', () => {
+    darkBeforePrint = isDark();
+    if (darkBeforePrint) setTheme(false, { save: false, animate: false });
+});
+window.addEventListener('afterprint', () => {
+    if (darkBeforePrint) setTheme(true, { save: false, animate: false });
+});
+
 /** <canvas x-data="chart(config)">: config is a Chart.js config object rendered from PHP. */
 Alpine.data('chart', (config) => ({
     init() {
@@ -121,7 +184,7 @@ Alpine.data('chart', (config) => ({
             config.options.plugins.legend = { ...(config.options.plugins.legend ?? {}), rtl: true };
             config.options.plugins.tooltip = { ...(config.options.plugins.tooltip ?? {}), rtl: true };
         }
-        new Chart(this.$el, config);
+        themeChart(new Chart(this.$el, config));
     },
 }));
 

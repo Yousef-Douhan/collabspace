@@ -42,6 +42,8 @@
         <button class="btn-primary w-full">{{ __('Create account') }}</button>
     </form>
 
+    @include('auth._social')
+
     <p class="mt-6 text-center text-sm text-slate-500">
         {{ __('Already have an account?') }} <a href="{{ route('login') }}" class="font-medium text-brand">{{ __('Sign In') }}</a>
     </p>

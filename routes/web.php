@@ -13,6 +13,7 @@ use App\Http\Controllers\Web\PlannerController;
 use App\Http\Controllers\Web\ProjectController;
 use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\SearchController;
+use App\Http\Controllers\Web\SocialAuthController;
 use App\Http\Controllers\Web\TaskController;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Http\Request;
@@ -42,6 +43,12 @@ Route::middleware('guest')->group(function () {
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:10,1');
     Route::get('register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('register', [AuthController::class, 'register']);
+
+    // Continue with GitHub / Google (Socialite)
+    Route::get('auth/{provider}/redirect', [SocialAuthController::class, 'redirect'])
+        ->whereIn('provider', array_keys(SocialAuthController::PROVIDERS))->middleware('throttle:20,1')->name('social.redirect');
+    Route::get('auth/{provider}/callback', [SocialAuthController::class, 'callback'])
+        ->whereIn('provider', array_keys(SocialAuthController::PROVIDERS))->middleware('throttle:20,1')->name('social.callback');
 });
 
 Route::middleware('auth')->group(function () {

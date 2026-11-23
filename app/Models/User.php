@@ -47,6 +47,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'github_id',
+        'google_id',
     ];
 
     protected function casts(): array
@@ -75,7 +77,8 @@ class User extends Authenticatable
 
     public function getAvatarUrlAttribute(): ?string
     {
-        return $this->avatar_path ? Storage::disk('public')->url($this->avatar_path) : null;
+        // An uploaded picture wins; otherwise the GitHub / Google profile picture, if any.
+        return $this->avatar_path ? Storage::disk('public')->url($this->avatar_path) : $this->oauth_avatar;
     }
 
     // --- Relations -------------------------------------------------------

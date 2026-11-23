@@ -20,6 +20,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    {{-- Theme before first paint (no white flash): saved choice, else the device setting --}}
+    <script>(function(){try{var t=localStorage.getItem('cs-theme');var d=t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.toggle('dark',d)}catch(e){}})();</script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="CollabSpace: an open-source team-collaboration demo app (Laravel) built for the Huma-volve CollabSpace Challenge.">
     @if (config('services.google.site_verification'))
@@ -81,6 +83,12 @@
                 <span class="relative flex size-2"><span class="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex size-2 rounded-full bg-emerald-500"></span></span>
                 {{ __('Live') }}
             </span>
+
+            {{-- Dark / light mode --}}
+            <button type="button" x-data="themeToggle" @click="toggle()" class="inline-flex size-8 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-600 transition hover:border-brand hover:text-brand" title="{{ __('Dark / light mode') }}" aria-label="{{ __('Dark / light mode') }}">
+                <svg class="theme-icon-moon size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+                <svg class="theme-icon-sun size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+            </button>
 
             {{-- Language menu (Figma: Language overlay) --}}
             @php $languages = ['en' => 'English', 'ar' => 'العربية', 'fr' => 'Français']; @endphp

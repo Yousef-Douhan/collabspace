@@ -433,5 +433,10 @@
     "Live": "En direct",
     "Real-time updates are on": "Les mises à jour en temps réel sont actives",
     "CollabSpace is an open-source demo project built by Yousef Douhan for the Huma-volve CollabSpace Challenge.": "CollabSpace est un projet de démonstration open source réalisé par Yousef Douhan pour le Huma-volve CollabSpace Challenge.",
-    "Source code on GitHub": "Code source sur GitHub"
+    "Source code on GitHub": "Code source sur GitHub",
+    "Dark / light mode": "Mode sombre / clair",
+    "or continue with": "ou continuer avec",
+    "Continue with :provider": "Continuer avec :provider",
+    "Sign-in with :provider failed. Please try again.": "La connexion avec :provider a échoué. Veuillez réessayer.",
+    "Your :provider account has no email address we can use.": "Votre compte :provider n'a pas d'adresse e-mail utilisable."
 }

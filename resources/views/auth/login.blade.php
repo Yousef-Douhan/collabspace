@@ -21,6 +21,8 @@
         <button class="btn-primary w-full">{{ __('Log in') }}</button>
     </form>
 
+    @include('auth._social')
+
     <p class="mt-6 text-center text-sm text-slate-500">
         {{ __("Don't have an account yet?") }} <a href="{{ route('register') }}" class="font-medium text-brand">{{ __('Sign Up') }}</a>
     </p>

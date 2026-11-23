@@ -124,3 +124,70 @@ nav a, .tab { transition: color .2s ease, background-color .25s ease, border-col
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* ───────────────────────── Dark mode ─────────────────────────
+   <html class="dark"> (set before paint by an inline script, toggled by the sun/moon button).
+   Instead of sprinkling dark: classes over every view, the design tokens and Tailwind's palette
+   variables are re-pointed here, so every page, partial and JS-rendered snippet follows. */
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+html.dark {
+    color-scheme: dark;
+
+    --color-canvas: #0A1120;
+    --color-white: #111A2B;            /* surfaces: cards, inputs, menus, modals */
+    --color-ink: #E5EAF2;              /* body text */
+
+    --color-brand: #3B7DFF;
+    --color-brand-50: rgb(59 125 255 / .14);
+    --color-brand-100: rgb(59 125 255 / .26);
+    --color-brand-700: #6A9BFF;
+
+    --color-slate-50: #152036;
+    --color-slate-100: #1B2740;
+    --color-slate-200: #26324A;
+    --color-slate-300: #34425E;
+    --color-slate-400: #75839D;
+    --color-slate-500: #8F9CB4;
+    --color-slate-600: #A9B5C9;
+    --color-slate-700: #C7D0DE;
+    --color-slate-800: #E2E8F0;
+    --color-slate-900: #F1F5F9;
+
+    --color-rose-50: rgb(244 63 94 / .13);   --color-rose-100: rgb(244 63 94 / .22);   --color-rose-200: rgb(244 63 94 / .34);   --color-rose-300: rgb(244 63 94 / .5);
+    --color-rose-600: #FB7185;   --color-rose-700: #FDA4AF;   --color-rose-800: #FECDD3;
+    --color-emerald-50: rgb(16 185 129 / .13); --color-emerald-100: rgb(16 185 129 / .22); --color-emerald-200: rgb(16 185 129 / .34);
+    --color-emerald-600: #34D399; --color-emerald-700: #6EE7B7; --color-emerald-800: #A7F3D0;
+    --color-amber-50: rgb(245 158 11 / .13);   --color-amber-100: rgb(245 158 11 / .22);
+    --color-amber-600: #FBBF24;   --color-amber-700: #FCD34D;
+    --color-violet-50: rgb(139 92 246 / .14);  --color-violet-100: rgb(139 92 246 / .24); --color-violet-200: rgb(139 92 246 / .36);
+    --color-violet-600: #A78BFA;  --color-violet-700: #C4B5FD;
+    --color-pink-50: rgb(236 72 153 / .14);    --color-pink-700: #F9A8D4;
+    --color-sky-100: rgb(14 165 233 / .22);    --color-sky-700: #7DD3FC;
+}
+
+/* Things that must stay what their name says */
+html.dark .text-white, html.dark .btn-primary { color: #fff; }
+html.dark .bg-white\/15 { background-color: rgb(255 255 255 / .15); }
+html.dark .bg-ink { background-color: #1F2A40; border: 1px solid #34425E; }
+html.dark .bg-slate-900\/40, html.dark .bg-slate-900\/50 { background-color: rgb(2 6 15 / .65); }
+html.dark .card { border-color: #1F2B42; }
+html.dark a.card:hover, html.dark article.card:hover, html.dark .lift:hover { box-shadow: 0 12px 28px -14px rgb(0 0 0 / .7); border-color: rgb(59 125 255 / .4); }
+html.dark .is-chosen { box-shadow: 0 16px 32px -12px rgb(0 0 0 / .7) !important; }
+html.dark ::placeholder { color: #67758F; }
+
+/* Inline SVG gauges / rings drawn with fixed light colours */
+html.dark [stroke="#EEF2F7"] { stroke: #26324A; }
+html.dark [stroke="#334155"] { stroke: #C7D0DE; }
+html.dark [fill="#334155"] { fill: #C7D0DE; }
+
+/* A short cross-fade while switching themes (not on page load) */
+html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after {
+    transition: background-color .3s ease, border-color .3s ease, color .3s ease, fill .3s ease, stroke .3s ease !important;
+}
+
+/* The toggle's icons */
+.theme-icon-sun { display: none; }
+html.dark .theme-icon-sun { display: block; }
+html.dark .theme-icon-moon { display: none; }
