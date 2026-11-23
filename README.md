@@ -16,6 +16,10 @@ Built with Laravel 13 for the **Huma-volve CollabSpace Challenge** · Figma: *Co
 ![Docker](https://img.shields.io/badge/Docker-one_command-2496ED?logo=docker&logoColor=white)
 ![i18n](https://img.shields.io/badge/i18n-English_%7C_Arabic_(RTL)_%7C_French-0B5FFF)
 
+### 🔗 [Live demo → collabspace-s3qk.onrender.com](https://collabspace-s3qk.onrender.com)
+
+Sign in with **`admin@collabspace.test`** / **`password`** · free hosting: the first visit after a quiet period can take about a minute to wake up.
+
 [Overview](#-overview) · [Features](#-features) · [Screenshots](#-screenshots) · [Quick start](#-quick-start) · [Docker](#-docker-one-command) · [API](#-rest-api) · [Architecture](#-architecture) · [Testing](#-testing)
 
 <img src="docs/screenshots/dashboard.png" alt="CollabSpace dashboard" width="100%">
@@ -175,7 +179,7 @@ docker compose up --build
 
 Open **http://localhost:8000** and sign in with `admin@collabspace.test` / `password`. One container runs Nginx, PHP-FPM 8.4, the Reverb WebSocket server and the scheduler (supervisord), on SQLite with the demo data seeded on first start. To enable AI, create a `.env` next to `docker-compose.yml` with `AI_API_KEY=...` before starting.
 
-The same image deploys to **Render** for free: `render.yaml` is a ready Blueprint (*New → Blueprint →* this repo). The public demo resets to clean demo data on every restart.
+The same image runs the **[live demo](https://collabspace-s3qk.onrender.com)** on Render's free plan: `render.yaml` is a ready Blueprint (*New → Blueprint →* this repo), Reverb WebSockets included. The demo resets to clean demo data on every restart.
 
 ---
 
