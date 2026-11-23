@@ -8,7 +8,7 @@
         @csrf
         <div>
             <label class="label" for="email">{{ __('Email') }}</label>
-            <input id="email" name="email" type="email" value="{{ old('email', 'admin@collabspace.test') }}" required autofocus class="input" placeholder="{{ __('Your Email') }}">
+            <input id="email" name="email" type="email" value="{{ old('email') }}" autocomplete="email" required autofocus class="input" placeholder="{{ __('Your Email') }}">
             @error('email')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
         </div>
         <div>
