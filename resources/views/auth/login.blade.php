@@ -24,7 +24,4 @@
     <p class="mt-6 text-center text-sm text-slate-500">
         {{ __("Don't have an account yet?") }} <a href="{{ route('register') }}" class="font-medium text-brand">{{ __('Sign Up') }}</a>
     </p>
-    <p class="mt-4 rounded-xl bg-slate-50 p-3 text-center text-xs text-slate-500">
-        {{ __('Demo') }}: <b>admin@collabspace.test</b> / <b>password</b>
-    </p>
 </x-layouts.guest>
