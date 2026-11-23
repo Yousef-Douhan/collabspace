@@ -4,6 +4,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="CollabSpace: an open-source team-collaboration demo app (Laravel) built for the Huma-volve CollabSpace Challenge.">
+    @if (config('services.google.site_verification'))
+        <meta name="google-site-verification" content="{{ config('services.google.site_verification') }}">
+    @endif
     <title>{{ $title ? $title.' · ' : '' }}Collabspace</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @if (app()->getLocale() === 'ar')
@@ -30,5 +34,10 @@
             {{ $slot }}
         </div>
     </div>
+    {{-- Who runs this site: an open-source portfolio demo, not a real company's sign-in page --}}
+    <p class="px-4 pb-8 text-center text-xs text-slate-400">
+        {{ __('CollabSpace is an open-source demo project built by Yousef Douhan for the Huma-volve CollabSpace Challenge.') }}
+        <a href="https://github.com/Yousef-Douhan/collabspace" class="text-brand hover:underline" target="_blank" rel="noopener">{{ __('Source code on GitHub') }}</a>
+    </p>
 </body>
 </html>

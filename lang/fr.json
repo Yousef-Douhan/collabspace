@@ -431,5 +431,7 @@
     ":name updated the board": ":name a mis à jour le tableau",
     "Refresh": "Actualiser",
     "Live": "En direct",
-    "Real-time updates are on": "Les mises à jour en temps réel sont actives"
+    "Real-time updates are on": "Les mises à jour en temps réel sont actives",
+    "CollabSpace is an open-source demo project built by Yousef Douhan for the Huma-volve CollabSpace Challenge.": "CollabSpace est un projet de démonstration open source réalisé par Yousef Douhan pour le Huma-volve CollabSpace Challenge.",
+    "Source code on GitHub": "Code source sur GitHub"
 }

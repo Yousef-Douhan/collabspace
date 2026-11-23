@@ -18,6 +18,8 @@ Built with Laravel 13 for the **Huma-volve CollabSpace Challenge** · Figma: *Co
 
 ### 🔗 [Live demo → collabspace-s3qk.onrender.com](https://collabspace-s3qk.onrender.com)
 
+### ▶️ [Watch the 1-minute demo video](https://youtu.be/gzkJ8Fmxl0U)
+
 Sign in with **`admin@collabspace.test`** / **`password`** · free hosting: the first visit after a quiet period can take about a minute to wake up.
 
 [Overview](#-overview) · [Features](#-features) · [Screenshots](#-screenshots) · [Quick start](#-quick-start) · [Docker](#-docker-one-command) · [API](#-rest-api) · [Architecture](#-architecture) · [Testing](#-testing)

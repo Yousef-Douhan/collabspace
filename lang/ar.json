@@ -431,5 +431,7 @@
     ":name updated the board": "حدّث :name اللوحة",
     "Refresh": "تحديث",
     "Live": "مباشر",
-    "Real-time updates are on": "التحديثات الفورية تعمل"
+    "Real-time updates are on": "التحديثات الفورية تعمل",
+    "CollabSpace is an open-source demo project built by Yousef Douhan for the Huma-volve CollabSpace Challenge.": "CollabSpace مشروع تجريبي مفتوح المصدر من تطوير يوسف دوحان لتحدي Huma-volve CollabSpace.",
+    "Source code on GitHub": "الكود المصدري على GitHub"
 }

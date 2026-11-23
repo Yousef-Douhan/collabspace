@@ -38,6 +38,11 @@ return [
         'timeout' => (int) env('AI_TIMEOUT', 30),
     ],
 
+    // Google Search Console ownership check (meta tag); set GOOGLE_SITE_VERIFICATION on the host.
+    'google' => [
+        'site_verification' => env('GOOGLE_SITE_VERIFICATION'),
+    ],
+
     'slack' => [
         // Incoming-webhook URL for meeting invitations/reminders posted to a channel (optional).
         'webhook_url' => env('SLACK_WEBHOOK_URL'),

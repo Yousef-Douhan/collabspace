@@ -20,7 +20,7 @@
         @endif
     </div>
     <div class="mt-2 flex items-baseline gap-2">
-        <span class="text-3xl font-semibold tabular-nums" x-data x-countup>{{ $value }}</span>
+        <span class="text-3xl font-semibold tabular-nums" data-stat x-data x-countup>{{ $value }}</span>
         @if (! is_null($change))
             <span @class(['text-xs', 'text-emerald-600' => $change >= 0, 'text-rose-600' => $change < 0])>
                 {{ $change >= 0 ? '↗ +' : '↘ ' }}<span dir="ltr">{{ $change }}{{ trim($suffix) === '%' ? '%' : ' '.__(trim($suffix)) }}</span> <span class="text-slate-400">{{ __('from last month') }}</span>

@@ -14,8 +14,10 @@
     ];
 @endphp
 <x-layouts.app :title="__('Dashboard')">
+    {{-- Live: when a teammate changes a task (Reverb), the numbers, lists and bars below refresh in place --}}
+    <div x-data="liveDashboard(@js(['projects' => $projects->pluck('id'), 'label' => __(':name updated the board')]))">
     {{-- Stat cards --}}
-    <div class="stagger grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div data-live="stats" class="stagger grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <x-stat-card label="Pending Tasks" :value="$s['todo']" :change="$c['todo']" icon="hourglass" tone="amber"
                      :progress="$s['total'] ? $s['todo'] / $s['total'] * 100 : 0" :progress-label="$s['todo'].'/'.$s['total']" />
         <x-stat-card label="In Progress" :value="$s['in_progress']" :change="$c['in_progress']" icon="loader" tone="brand"
@@ -53,7 +55,7 @@
                 <h2 class="font-semibold">{{ __('Active Projects') }}</h2>
                 <a href="{{ route('projects.index') }}" class="text-xs text-brand">{{ __('View All') }}</a>
             </div>
-            <div class="space-y-3">
+            <div data-live="projects" class="space-y-3">
                 @forelse ($d['active_projects'] as $p)
                     <a href="{{ route('projects.show', $p['id']) }}" class="lift block rounded-xl border border-slate-100 p-3 hover:bg-slate-50">
                         <div class="mb-2 flex items-center justify-between text-sm">
@@ -107,7 +109,7 @@
                 <h2 class="font-semibold">{{ __('Tasks') }}</h2>
                 <a href="{{ route('tasks.index') }}" class="text-xs text-brand">{{ __('View All') }}</a>
             </div>
-            <div class="max-h-96 space-y-3 overflow-y-auto pe-1">
+            <div data-live="tasks" class="max-h-96 space-y-3 overflow-y-auto pe-1">
                 @forelse ($d['priority_tasks'] as $t)
                     <a href="{{ route('tasks.show', $t['id']) }}" class="lift block rounded-xl border border-slate-100 p-3 hover:bg-slate-50">
                         <div class="flex items-start justify-between gap-2">
@@ -140,7 +142,7 @@
                 </form>
             </div>
             <div class="mb-2 flex justify-between text-[11px] text-slate-400"><span>{{ __('Name') }}</span><span>{{ __('Tasks') }}</span></div>
-            <div class="space-y-3">
+            <div data-live="teams" class="space-y-3">
                 @forelse ($d['team_status'] as $m)
                     <a href="{{ route('members.show', $m['id']) }}" class="flex items-center gap-3 hover:opacity-80">
                         <x-avatar :user="(object) $m" size="8" />
@@ -202,5 +204,6 @@
                 <div class="text-end"><button class="btn-primary inline-flex items-center gap-1.5 px-3 py-1 text-xs">{{ __('Send') }} <x-icon name="send" size="3.5" class="rtl:-scale-x-100" /></button></div>
             </form>
         </div>
+    </div>
     </div>
 </x-layouts.app>

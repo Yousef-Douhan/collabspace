@@ -139,4 +139,15 @@ class RealtimeTest extends TestCase
         $this->assertDatabaseHas('messages', ['body' => 'Still here']);
         $this->assertSame(TaskStatus::Completed, $task->fresh()->status);
     }
+
+    public function test_the_dashboard_is_wired_for_live_updates(): void
+    {
+        Project::factory()->create(['owner_id' => $this->me->id]);
+
+        $this->actingAs($this->me)->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('liveDashboard', false)
+            ->assertSee('data-live="stats"', false)
+            ->assertSee('data-stat', false);
+    }
 }

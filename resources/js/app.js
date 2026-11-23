@@ -205,6 +205,76 @@ Alpine.data('chatThread', ({ url, channel = null, me = null }) => ({
 }));
 
 /**
+ * <div x-data="liveDashboard({ projects, label })">: the dashboard follows the team in real time.
+ * On any "task.updated" event (Reverb) it re-fetches the page once (debounced), swaps the
+ * [data-live] regions whose text changed, counts changed numbers from their old to new value
+ * and flashes those cards. Without a socket it simply stays a normal page.
+ */
+Alpine.data('liveDashboard', ({ projects = [], label = '' } = {}) => ({
+    timer: null,
+    init() {
+        if (!window.Echo) return;
+        projects.forEach((id) => {
+            window.Echo.private(`project.${id}`).listen('.task.updated', (e) => {
+                clearTimeout(this.timer);
+                this.timer = setTimeout(() => this.refresh(e), 600);
+            });
+        });
+    },
+    async refresh(e) {
+        let doc;
+        try {
+            const res = await fetch(window.location.href, { headers: { Accept: 'text/html' } });
+            if (!res.ok) return;
+            doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+        } catch {
+            return;
+        }
+        const text = (el) => el.textContent.replace(/\s+/g, ' ').trim();
+        let changed = false;
+
+        this.$el.querySelectorAll('[data-live]').forEach((region) => {
+            const fresh = doc.querySelector(`[data-live="${region.dataset.live}"]`);
+            if (!fresh || text(fresh) === text(region)) return;
+            changed = true;
+
+            const before = [...region.querySelectorAll('[data-stat]')].map((el) => el.textContent.trim());
+            fresh.querySelectorAll('[x-countup]').forEach((el) => el.removeAttribute('x-countup'));
+            region.innerHTML = fresh.innerHTML;
+
+            region.querySelectorAll('[data-stat]').forEach((el, i) => {
+                const after = el.textContent.trim();
+                if (before[i] === undefined || before[i] === after) return;
+                this.countFrom(el, before[i], after);
+                const card = el.closest('.card');
+                card?.classList.remove('remote-flash');
+                void card?.offsetWidth;
+                card?.classList.add('remote-flash');
+            });
+        });
+
+        if (changed && e?.actor) this.$dispatch('realtime-toast', label.replace(':name', e.actor));
+    },
+    /** "3" → "4", "22%" → "33%": animate the number, keep the prefix/suffix. */
+    countFrom(el, from, to) {
+        const parse = (s) => s.match(/^(\D*)(\d+(?:\.\d+)?)(.*)$/s);
+        const a = parse(from);
+        const b = parse(to);
+        if (!a || !b || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const start = performance.now();
+        const x0 = parseFloat(a[2]);
+        const x1 = parseFloat(b[2]);
+        const tick = (now) => {
+            const p = Math.min(1, (now - start) / 700);
+            const eased = 1 - Math.pow(1 - p, 3);
+            el.textContent = b[1] + Math.round(x0 + (x1 - x0) * eased) + b[3];
+            if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+    },
+}));
+
+/**
  * Navbar search history (Figma "Recent Searches" overlay). Stored in this browser only;
  * storage can be unavailable (private mode), so every access is guarded.
  */
