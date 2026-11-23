@@ -36,14 +36,14 @@
                         <h2 class="flex items-center gap-2 font-semibold"><x-icon name="sparkles" class="text-amber-500" />{{ __('AI Summary') }}</h2>
                         @if ($canSummarize && $meeting->transcript)
                             <form method="POST" action="{{ route('meetings.summarize', $meeting) }}">@csrf
-                                <button class="btn-ghost text-xs">{{ $meeting->ai_summary ? 'Regenerate' : 'Generate summary' }}</button>
+                                <button class="btn-ghost text-xs">{{ $meeting->ai_summary ? __('Regenerate') : __('Generate summary') }}</button>
                             </form>
                         @endif
                     </div>
                     @if ($meeting->ai_summary)
                         <div dir="auto" class="prose-chat text-sm text-slate-700">{!! \Illuminate\Support\Str::markdown($meeting->ai_summary, ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}</div>
                     @else
-                        <x-empty class="py-6">{{ $meeting->transcript ? 'No summary yet — generate one from the transcript.' : 'Add a transcript to generate an AI summary.' }}</x-empty>
+                        <x-empty class="py-6">{{ $meeting->transcript ? __('No summary yet — generate one from the transcript.') : __('Add a transcript to generate an AI summary.') }}</x-empty>
                     @endif
                 </div>
                 @if ($meeting->key_points)

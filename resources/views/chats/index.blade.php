@@ -50,7 +50,7 @@
                     @php $pivot = $conversation->participants->firstWhere('id', $me->id)?->pivot; @endphp
                     <form method="POST" action="{{ route('chats.state', $conversation) }}">@csrf @method('PATCH')
                         <input type="hidden" name="is_pinned" value="{{ $pivot?->is_pinned ? 0 : 1 }}">
-                        <button class="btn-ghost text-xs">{{ $pivot?->is_pinned ? 'Unpin' : 'Pin' }}</button>
+                        <button class="btn-ghost text-xs">{{ $pivot?->is_pinned ? __('Unpin') : __('Pin') }}</button>
                     </form>
                     <form method="POST" action="{{ route('chats.state', $conversation) }}">@csrf @method('PATCH')
                         <input type="hidden" name="is_archived" value="1">

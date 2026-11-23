@@ -39,7 +39,7 @@
                 <div class="card p-5" x-data="{ editing: false }">
                     <div class="mb-2 flex items-center justify-between">
                         <h2 class="font-semibold">{{ __('Project Wiki') }}</h2>
-                        <button @click="editing = !editing" class="text-xs text-brand" x-text="editing ? 'Cancel' : 'Edit'"></button>
+                        <button @click="editing = !editing" class="text-xs text-brand" x-text="editing ? @js(__('Cancel')) : @js(__('Edit'))"></button>
                     </div>
                     <div x-show="!editing" class="prose-chat text-sm text-slate-700">{!! $project->wiki ? \Illuminate\Support\Str::markdown($project->wiki, ['html_input' => 'strip', 'allow_unsafe_links' => false]) : '<p class="text-slate-400">'.e(__('The wiki is empty.')).'</p>' !!}</div>
                     <form x-cloak x-show="editing" method="POST" action="{{ route('projects.wiki', $project) }}" class="space-y-2">

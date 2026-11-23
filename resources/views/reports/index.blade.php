@@ -109,7 +109,7 @@
                   busy: false, error: '',
                   async draft() {
                       this.busy = true; this.error = '';
-                      const f = new FormData(this.$el);
+                      const f = new FormData(this.$root);
                       try {
                           const { data } = await window.api(@js(route('reports.draft')), { method: 'POST', body: {
                               type: f.get('type'), project_id: f.get('project_id') || null,

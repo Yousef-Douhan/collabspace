@@ -39,7 +39,7 @@
                 @foreach ($nav as [$label, $route, $pattern])
                     <a href="{{ route($route) }}"
                        @class([
-                           'rounded-full px-3.5 py-1.5 text-xs font-medium transition',
+                           'whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-medium transition',
                            'bg-brand text-white shadow-sm' => request()->routeIs($pattern),
                            'text-slate-600 hover:text-slate-900' => ! request()->routeIs($pattern),
                        ])>{{ __($label) }}</a>
@@ -71,7 +71,7 @@
             {{-- Language menu (Figma: Language overlay) --}}
             @php $languages = ['en' => 'English', 'ar' => 'العربية', 'fr' => 'Français']; @endphp
             <div x-data="{ open: false }" class="relative" @click.outside="open = false">
-                <button type="button" @click="open = !open" class="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs text-slate-600 hover:border-brand hover:text-brand">
+                <button type="button" @click="open = !open" class="whitespace-nowrap rounded-full border border-slate-300 bg-white px-3 py-1 text-xs text-slate-600 hover:border-brand hover:text-brand">
                     {{ $languages[app()->getLocale()] ?? 'English' }} ▾
                 </button>
                 <div x-cloak x-show="open" x-transition.opacity class="absolute end-0 z-40 mt-2 w-40 rounded-2xl border border-slate-100 bg-white p-2 shadow-lg">
