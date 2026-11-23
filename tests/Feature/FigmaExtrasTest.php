@@ -134,7 +134,7 @@ class FigmaExtrasTest extends TestCase
 
     public function test_french_interface_and_profile_join_date(): void
     {
-        $this->actingAs($this->admin)->get(route('locale.switch', 'fr'))->assertRedirect();
+        $this->actingAs($this->admin)->post(route('locale.switch'), ['locale' => 'fr'])->assertRedirect();
 
         $this->actingAs($this->admin->fresh())
             ->get(route('dashboard'))
