@@ -6,6 +6,7 @@ use App\Enums\Priority;
 use App\Enums\TaskStatus;
 use App\Enums\Track;
 use App\Models\Project;
+use App\Models\Task;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -16,7 +17,7 @@ class StoreTaskRequest extends FormRequest
         $project = Project::find($this->integer('project_id'));
 
         // Unknown project → let validation report it; otherwise check membership.
-        return $project === null || $this->user()->can('create', [\App\Models\Task::class, $project]);
+        return $project === null || $this->user()->can('create', [Task::class, $project]);
     }
 
     public function rules(): array

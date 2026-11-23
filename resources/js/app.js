@@ -175,5 +175,50 @@ Alpine.directive('countup', (el) => {
     requestAnimationFrame(tick);
 });
 
+/**
+ * AI task planner dialog (see resources/views/tasks/_planner.blade.php):
+ * asks the server for suggestions, lets the user edit/untick them, then creates the kept ones.
+ */
+Alpine.data('taskPlanner', ({ suggestUrl, createUrl, meetingId }) => ({
+    visible: false,
+    loading: false,
+    saving: false,
+    error: '',
+    tasks: [],
+    get kept() {
+        return this.tasks.filter((t) => t.keep && t.title.trim()).length;
+    },
+    open() {
+        this.visible = true;
+        if (!this.tasks.length) this.suggest();
+    },
+    async suggest() {
+        this.loading = true;
+        this.error = '';
+        this.tasks = [];
+        try {
+            const { data } = await window.api(suggestUrl, { method: 'POST' });
+            this.tasks = data.map((t) => ({ ...t, description: t.description ?? '', due_date: t.due_date ?? '', keep: true }));
+        } catch (e) {
+            this.error = e.message;
+        }
+        this.loading = false;
+    },
+    async create() {
+        this.saving = true;
+        this.error = '';
+        try {
+            const tasks = this.tasks
+                .filter((t) => t.keep && t.title.trim())
+                .map(({ keep, ...t }) => ({ ...t, due_date: t.due_date || null, description: t.description || null }));
+            const res = await window.api(createUrl, { method: 'POST', body: { tasks, meeting_id: meetingId } });
+            window.location = res.redirect;
+        } catch (e) {
+            this.error = e.message;
+            this.saving = false;
+        }
+    },
+}));
+
 window.Alpine = Alpine;
 Alpine.start();

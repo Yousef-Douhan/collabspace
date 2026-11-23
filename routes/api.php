@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\SearchController;
 use App\Http\Controllers\Api\V1\TaskController;
 use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Web\PlannerController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -112,8 +113,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         // --- Dashboard, reports, search, meta -----------------------------
         Route::get('dashboard', DashboardController::class)->name('dashboard');
         Route::get('reports/overview', [ReportController::class, 'overview'])->name('reports.overview');
+        // AI task planning (same JSON actions the web pages use)
+        Route::post('meetings/{meeting}/plan', [PlannerController::class, 'fromMeeting'])->name('planner.meeting')->middleware('throttle:10,1');
+        Route::post('projects/{project}/plan', [PlannerController::class, 'forProject'])->name('planner.project')->middleware('throttle:10,1');
+        Route::post('projects/{project}/tasks/bulk', [PlannerController::class, 'createMany'])->name('planner.create');
         // Same JSON action the web form calls: AI-written notes for a detailed report.
-        Route::post('reports/draft', [\App\Http\Controllers\Web\ReportController::class, 'draft'])->name('reports.draft')->middleware('throttle:10,1');
+        Route::post('reports/draft', [App\Http\Controllers\Web\ReportController::class, 'draft'])->name('reports.draft')->middleware('throttle:10,1');
         Route::get('reports/{report}/export', [ReportController::class, 'export'])->name('reports.export');
         Route::apiResource('reports', ReportController::class)->except(['update']);
         Route::get('search', SearchController::class)->name('search');

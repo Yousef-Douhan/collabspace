@@ -3,8 +3,8 @@
 namespace App\Notifications;
 
 use App\Models\Meeting;
-use Illuminate\Notifications\Messages\MailMessage;
 use App\Models\User;
+use Illuminate\Notifications\Messages\MailMessage;
 
 class MeetingInvitation extends WorkspaceNotification
 {

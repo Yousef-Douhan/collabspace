@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\MeetingResponse;
 use App\Enums\TaskStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TaskResource;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\UserSummaryResource;
-use App\Enums\MeetingResponse;
 use App\Models\ActivityLog;
 use App\Models\Project;
 use App\Models\User;

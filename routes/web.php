@@ -9,6 +9,7 @@ use App\Http\Controllers\Web\FileController;
 use App\Http\Controllers\Web\MeetingController;
 use App\Http\Controllers\Web\MemberController;
 use App\Http\Controllers\Web\NotificationController;
+use App\Http\Controllers\Web\PlannerController;
 use App\Http\Controllers\Web\ProjectController;
 use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\SearchController;
@@ -99,7 +100,7 @@ Route::middleware('auth')->group(function () {
     Route::post('reports', [ReportController::class, 'store'])->name('reports.store');
     Route::post('reports/draft', [ReportController::class, 'draft'])->name('reports.draft')->middleware('throttle:10,1');
     Route::delete('reports/{report}', [ReportController::class, 'destroy'])->name('reports.destroy');
-    Route::get('reports/{report}/export', [\App\Http\Controllers\Api\V1\ReportController::class, 'export'])->name('reports.export');
+    Route::get('reports/{report}/export', [App\Http\Controllers\Api\V1\ReportController::class, 'export'])->name('reports.export');
 
     // Ask AI
     Route::get('ai', [AiController::class, 'index'])->name('ai.index');
@@ -118,6 +119,13 @@ Route::middleware('auth')->group(function () {
         Route::patch('users/{user}/role', [AdminController::class, 'updateRole'])->name('users.role');
         Route::patch('users/{user}/status', [AdminController::class, 'updateStatus'])->name('users.status');
     });
+
+    // AI task planning (JSON, called from the meeting and project pages)
+    Route::middleware('throttle:10,1')->group(function () {
+        Route::post('meetings/{meeting}/plan', [PlannerController::class, 'fromMeeting'])->name('planner.meeting');
+        Route::post('projects/{project}/plan', [PlannerController::class, 'forProject'])->name('planner.project');
+    });
+    Route::post('projects/{project}/tasks/bulk', [PlannerController::class, 'createMany'])->name('planner.create');
 
     // Members & settings
     Route::get('members/{user}', [MemberController::class, 'show'])->name('members.show');

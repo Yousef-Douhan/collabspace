@@ -3,6 +3,7 @@
 namespace Tests\Feature\Api;
 
 use App\Models\Project;
+use App\Models\ProjectFile;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -46,7 +47,7 @@ class FileTest extends TestCase
 
         $this->assertSame('scope.txt', $file['name']);
         $this->assertSame(11, $file['size_bytes']);
-        Storage::disk('local')->assertExists("projects/{$this->project->id}/".basename(\App\Models\ProjectFile::find($file['id'])->path));
+        Storage::disk('local')->assertExists("projects/{$this->project->id}/".basename(ProjectFile::find($file['id'])->path));
 
         $download = $this->get($file['download_url'])->assertOk();
         $this->assertSame('Alpha scope', $download->streamedContent());
@@ -93,7 +94,7 @@ class FileTest extends TestCase
         $other = $this->member($this->project);
         Sanctum::actingAs($uploader);
         $file = $this->upload();
-        $path = \App\Models\ProjectFile::find($file['id'])->path;
+        $path = ProjectFile::find($file['id'])->path;
 
         Sanctum::actingAs($other);
         $this->deleteJson("/api/v1/files/{$file['id']}")->assertForbidden();

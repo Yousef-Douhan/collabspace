@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Api;
 
+use App\Enums\ProjectRole;
 use App\Enums\TaskStatus;
 use App\Models\Task;
 use App\Models\User;
@@ -30,7 +31,7 @@ class UserTest extends TestCase
         $me = User::factory()->create();
         $colleague = User::factory()->create();
 
-        $shared = $this->projectWith($me, [[$colleague, \App\Enums\ProjectRole::Member]]);
+        $shared = $this->projectWith($me, [[$colleague, ProjectRole::Member]]);
         $sharedTask = Task::factory()->create(['project_id' => $shared->id]);
         $sharedTask->assignees()->attach($colleague);
 

@@ -56,6 +56,18 @@
                         </ul>
                     </div>
                 @endif
+                {{-- AI: meeting → tasks on the Kanban board --}}
+                @if ($meeting->project && ($meeting->ai_summary || $meeting->key_points || $meeting->notes || $meeting->transcript))
+                    @can('create', [\App\Models\Task::class, $meeting->project])
+                        <div class="card flex flex-wrap items-center justify-between gap-3 border-violet-100 bg-linear-to-br from-violet-50/60 to-white p-5">
+                            <div>
+                                <h2 class="font-semibold">{{ __('Turn this meeting into tasks') }}</h2>
+                                <p class="text-xs text-slate-500">{{ __('The AI pulls out the action items, owners and dates, and you review them before they go on the board.') }}</p>
+                            </div>
+                            @include('tasks._planner', ['project' => $meeting->project, 'suggestUrl' => route('planner.meeting', $meeting), 'meetingId' => $meeting->id, 'label' => __('Create tasks with AI')])
+                        </div>
+                    @endcan
+                @endif
                 @if ($meeting->agenda)
                     <div class="card p-5"><h2 class="mb-2 font-semibold">{{ __('Agenda') }}</h2><p dir="auto" class="whitespace-pre-line text-sm text-slate-600">{{ $meeting->agenda }}</p></div>
                 @endif

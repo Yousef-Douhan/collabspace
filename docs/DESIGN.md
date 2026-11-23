@@ -245,6 +245,9 @@ Auth: `Authorization: Bearer <token>` (Sanctum). Errors: standard Laravel JSON (
 ### Figma review additions
 | GET | `/dashboard?period=today\|week\|month\|quarter\|year\|all&track=` | chart buckets follow the period; Teams card filtered by track, `is_leader` |
 |---|---|---|
+| POST | `/meetings/{meeting}/plan` | AI: action items → suggested tasks (review only) |
+| POST | `/projects/{project}/plan` | AI: description/wiki → starter plan (review only) |
+| POST | `/projects/{project}/tasks/bulk` | create the kept suggestions `{tasks[], meeting_id?}` |
 | POST | `/reports/draft` | `{type, project_id?, period_start?, period_end?}` → AI-written notes |
 | POST | `/meetings` | also accepts `notify_channels[]` = `app` · `email` · `slack` (mail + Slack webhook) |
 

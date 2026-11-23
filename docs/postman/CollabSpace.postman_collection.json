@@ -2159,6 +2159,106 @@
       ]
     },
     {
+      "name": "AI planner",
+      "description": "AI task planning (needs AI_API_KEY). Suggestions are only proposals; create the ones you keep with the bulk request.",
+      "item": [
+        {
+          "name": "Meeting → task suggestions",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/meetings/{{meeting_id}}/plan",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "meetings",
+                "{{meeting_id}}",
+                "plan"
+              ]
+            },
+            "description": "Action items from the meeting's summary, key points, notes and transcript."
+          }
+        },
+        {
+          "name": "Project → plan suggestions",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/plan",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "plan"
+              ]
+            },
+            "description": "A starter plan from the project description and wiki."
+          }
+        },
+        {
+          "name": "Create kept tasks (bulk)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/tasks/bulk",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "tasks",
+                "bulk"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"meeting_id\": null,\n  \"tasks\": [\n    {\n      \"title\": \"Finish the move endpoint\",\n      \"description\": \"PATCH /tasks/{id}/move\",\n      \"track\": \"back_end\",\n      \"priority\": \"high\",\n      \"assignee_id\": null,\n      \"due_date\": null\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Reports",
       "item": [
         {

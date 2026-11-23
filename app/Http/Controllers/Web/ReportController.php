@@ -10,12 +10,12 @@ use App\Models\Report;
 use App\Services\ReportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Validation\Rule;
-use RuntimeException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use RuntimeException;
 
 class ReportController extends Controller
 {

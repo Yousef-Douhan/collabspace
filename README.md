@@ -10,7 +10,8 @@ Built with Laravel 13 for the **Huma-volve CollabSpace Challenge** · Figma: *Co
 ![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
 ![Alpine.js](https://img.shields.io/badge/Alpine.js-3-8BC0D0?logo=alpinedotjs&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-107_passing-2EA44F)
+[![CI](https://github.com/Yousef-Douhan/collabspace/actions/workflows/ci.yml/badge.svg)](https://github.com/Yousef-Douhan/collabspace/actions/workflows/ci.yml)
+![Tests](https://img.shields.io/badge/tests-113_passing-2EA44F)
 ![i18n](https://img.shields.io/badge/i18n-English_%7C_Arabic_(RTL)_%7C_French-0B5FFF)
 
 [Overview](#-overview) · [Features](#-features) · [Screenshots](#-screenshots) · [Quick start](#-quick-start) · [API](#-rest-api) · [Architecture](#-architecture) · [Testing](#-testing)
@@ -28,11 +29,11 @@ CollabSpace gives a team one place to plan work, talk, meet and see progress. On
 | Client | Auth | Purpose |
 |---|---|---|
 | **Blade web app** | Session | The full UI from the Figma design, in English, Arabic (RTL) and French |
-| **REST API** `/api/v1` | Sanctum tokens | For mobile and SPA clients. Ships with a 77-request Postman collection |
+| **REST API** `/api/v1` | Sanctum tokens | For mobile and SPA clients. Ships with a 80-request Postman collection |
 
 Both clients go through the **same Form Requests, Policies and Services**, so validation, permissions and business rules are defined once.
 
-> **نبذة بالعربية:** منصة تعاون للفرق، فيها إدارة المشاريع، ولوحة مهام Kanban بالسحب والإفلات، ومحادثات مع علامات القراءة، واجتماعات بتقويم أسبوعي وملخص بالذكاء الاصطناعي، وتقارير ورسوم بيانية، ومساعد ذكي يجيب من بيانات الفريق. الواجهة كاملة بالعربية والإنجليزية والفرنسية مع دعم الكتابة من اليمين لليسار، ومعها REST API موثّق و107 اختبارات آلية.
+> **نبذة بالعربية:** منصة تعاون للفرق، فيها إدارة المشاريع، ولوحة مهام Kanban بالسحب والإفلات، ومحادثات مع علامات القراءة، واجتماعات بتقويم أسبوعي وملخص بالذكاء الاصطناعي، وتقارير ورسوم بيانية، ومساعد ذكي يجيب من بيانات الفريق. الواجهة كاملة بالعربية والإنجليزية والفرنسية مع دعم الكتابة من اليمين لليسار، ومعها REST API موثّق و113 اختباراً آلياً.
 
 ---
 
@@ -54,6 +55,8 @@ Both clients go through the **same Form Requests, Policies and Services**, so va
 
 - **🤖 Ask AI:** a chat assistant that answers questions about the user's own projects, tasks and meetings, in English or Arabic.
 - **✨ Meeting AI summary:** one click turns the transcript into a summary and key points.
+- **🪄 Meeting → tasks:** the AI pulls the agreed action items, with their owners and dates, out of a meeting. You review and edit them, then they land on the Kanban board, and the assignees are notified.
+- **🗺 Plan with AI:** from a project's description and wiki, the AI proposes a starter plan across the UI/UX, front-end, back-end and graphic-design tracks, matched to the team members. Nothing is created until you approve it.
 - **Dashboard:** stats with month-over-month change and a completion gauge; an activity chart with *All Projects* and *Duration* menus (today, this week, this month, last three months, this year); a *Teams* card filtered by track with *Leader* badges; upcoming meetings with attendees.
 - **Reports:** completion and activity KPIs, three charts (worker activity monthly or weekly), per-project and per-member tables, **AI-drafted report notes**, *Print / Save PDF*, saved reports and CSV export.
 
@@ -197,6 +200,7 @@ curl -X PATCH http://127.0.0.1:8000/api/v1/tasks/5/move \
 | `ai` | `ask`, history |
 | `dashboard`, `reports`, `search` | aggregates, KPIs and charts, CSV export, global search |
 | `notifications`, `meta` | list, read, read-all; enums for client dropdowns |
+| `planner` | `POST /meetings/{id}/plan`, `POST /projects/{id}/plan` (AI suggestions), `POST /projects/{id}/tasks/bulk` |
 | `admin` | workspace stats, user list with filters, change role, deactivate and reactivate (admins only) |
 
 </details>
@@ -229,6 +233,7 @@ curl -X PATCH http://127.0.0.1:8000/api/v1/tasks/5/move \
 | **`visibleTo($user)` scopes** | One definition of what a user can see. The AI assistant builds its context through the same scopes, so it never sees another team's data. |
 | **Contiguous Kanban positions** | A move re-numbers both columns inside one database transaction, so the order stays consistent. |
 | **Private `local` disk for files** | Nothing is publicly reachable. Every download passes a policy check. |
+| **AI proposes, people decide** | Planner suggestions are validated against the project (members, tracks, dates) and only created after the user reviews them. The model's output is never trusted as-is. |
 | **Provider-agnostic `AiService`** | Switching between Gemini, OpenAI and Anthropic is an `.env` change. Failures surface as a clean `503`. |
 | **Backed enums with translated labels** | Type-safe statuses and priorities, the same labels in the UI and the API, and Arabic for free. |
 | **Deactivate, don't delete** | Disabling an account keeps the user's tasks, files and history intact. Tokens are revoked at once, and web sessions end on their next request. |
@@ -262,13 +267,14 @@ tests/Feature/                Api/ · Web/
 php artisan test
 ```
 
-**107 tests, all passing.** The suite runs on in-memory SQLite and fakes every AI call, so it needs no database or API key.
+**113 tests, all passing.** GitHub Actions runs them, plus a Laravel Pint style check and a production asset build, on every push. The suite runs on in-memory SQLite and fakes every AI call, so it needs no database or API key.
 
 | Suite | Coverage |
 |---|---|
 | `Feature/Api/*` (14 files) | Auth, projects and roles, tasks and Kanban ordering, files, chats and receipts, meetings and reminders, AI, notifications, dashboard, reports, search, and permission boundaries |
 | `Feature/Web/WebPagesTest` | Every Blade page renders; login and logout; Kanban move; forms; live chat polling; access control |
 | `Feature/Web/LocaleTest` | Language switching, RTL on every page, Arabic validation, API `Accept-Language` |
+| `Feature/PlannerTest` | Meeting → tasks and project plans: the AI's output is sanitized (unknown tracks, people outside the project, bad dates), bulk creation, notifications, permissions, friendly errors |
 | `Feature/FigmaExtrasTest` | Dashboard duration and team filters, the overdue filter, the New Meeting form (duration, attachments, email and Slack), report print and AI draft, the French UI |
 | `Feature/AdminTest` | Admin-only access, role changes, the last-admin and self-protection rules, deactivation ending web and API sessions, admin API |
 | `Feature/DatabaseSeederTest` | The demo workspace is consistent |

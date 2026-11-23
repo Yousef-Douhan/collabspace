@@ -9,8 +9,11 @@
 <x-layouts.app :title="$project->name">
     <x-page-header :title="$project->name" :crumbs="['Projects' => route('projects.index')]">
         <x-slot:subtitle>
-            <span class="mt-2 inline-block rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-600">{{ $pct }}% Completed</span>
+            <span class="mt-2 inline-block rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-600">{{ __(':pct% Completed', ['pct' => $pct]) }}</span>
         </x-slot:subtitle>
+        @can('create', [\App\Models\Task::class, $project])
+            @include('tasks._planner', ['project' => $project, 'suggestUrl' => route('planner.project', $project), 'label' => __('Plan with AI')])
+        @endcan
         @if ($daysTotal)
             <div class="card w-72 px-4 py-3">
                 <div class="mb-1.5 text-xs font-medium">{{ __('Due Date') }}</div>
