@@ -9,6 +9,12 @@ if [ -z "${APP_KEY:-}" ]; then
     export APP_KEY="base64:$(head -c 32 /dev/urandom | base64)"
 fi
 
+# The Reverb key travels in the WebSocket URL (wss://host/app/<key>): keep it URL-safe.
+# (Render's generated values are base64 and may contain "/", "+" or "=".)
+if [ -n "${REVERB_APP_KEY:-}" ]; then
+    export REVERB_APP_KEY="$(printf '%s' "$REVERB_APP_KEY" | tr -dc 'A-Za-z0-9')"
+fi
+
 # On Render the public URL is only known at runtime.
 if [ -n "${RENDER_EXTERNAL_URL:-}" ]; then
     export APP_URL="${APP_URL:-$RENDER_EXTERNAL_URL}"
