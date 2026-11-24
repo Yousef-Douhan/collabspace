@@ -42,10 +42,12 @@
 <body class="min-h-screen bg-canvas font-sans text-ink antialiased">
     {{-- Top bar (Figma: wordmark · pill nav · search · bell · user) --}}
     <header class="sticky top-0 z-30 border-b border-slate-200/70 bg-white print:hidden">
-        <div class="mx-auto flex h-16 max-w-[1360px] items-center gap-3 px-6 xl:gap-6">
-            <a href="{{ route('dashboard') }}" class="text-lg font-semibold tracking-tight">Collabspace</a>
+        <div class="mx-auto flex h-16 max-w-[1360px] items-center gap-3 px-4 sm:px-6 xl:gap-6">
+            <a href="{{ route('dashboard') }}" class="shrink-0 text-lg font-semibold tracking-tight">Collabspace</a>
 
-            <nav class="flex items-center gap-1 rounded-full bg-slate-100 p-1">
+            {{-- On narrow screens the menu scrolls sideways instead of pushing the toolbar off-screen. --}}
+            <nav class="flex min-w-0 items-center gap-1 overflow-x-auto rounded-full bg-slate-100 p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                 x-data x-init="$el.querySelector('.bg-brand')?.scrollIntoView({ inline: 'center', block: 'nearest' })">
                 @foreach ($nav as [$label, $route, $pattern])
                     <a href="{{ route($route) }}"
                        @class([
