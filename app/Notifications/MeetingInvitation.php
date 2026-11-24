@@ -20,9 +20,13 @@ class MeetingInvitation extends WorkspaceNotification
         return 'Meeting invitation';
     }
 
-    public function message(): string
+    public function line(): array
     {
-        return "{$this->by->name} invited you to \"{$this->meeting->title}\" on {$this->meeting->starts_at->format('M j, H:i')}.";
+        return [':name invited you to ":meeting" on :date.', [
+            'name' => $this->by->name,
+            'meeting' => $this->meeting->title,
+            'date' => $this->meeting->starts_at->format('M j, H:i'),
+        ]];
     }
 
     public function context(): array

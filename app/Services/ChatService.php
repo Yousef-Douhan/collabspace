@@ -8,6 +8,7 @@ use App\Events\ConversationUpdated;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
+use App\Notifications\MessageReceived;
 use App\Support\Realtime;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -91,8 +92,26 @@ class ChatService
         $this->markRead($sender, $conversation); // your own message is never "unread"
 
         Realtime::dispatch(new ConversationUpdated($conversation->id, ConversationUpdated::SENT, $message->id, $sender->id));
+        $this->notifyParticipants($sender, $conversation, $message);
 
         return $message;
+    }
+
+    /**
+     * Tell the other participants, but only once per chat until they read it: someone who
+     * already has an unread notice for this conversation is not notified again.
+     */
+    private function notifyParticipants(User $sender, Conversation $conversation, Message $message): void
+    {
+        $conversation->participants()
+            ->whereKeyNot($sender->id)
+            ->whereNull('deactivated_at')
+            ->get()
+            ->reject(fn (User $user) => $user->unreadNotifications()
+                ->where('data->type', 'message_received')
+                ->where('data->conversation_id', $conversation->id)
+                ->exists())
+            ->each(fn (User $user) => $user->notify(new MessageReceived($conversation, $message, $sender)));
     }
 
     public function edit(Message $message, string $body): Message

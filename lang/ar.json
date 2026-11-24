@@ -438,5 +438,20 @@
     "or continue with": "أو تابع باستخدام",
     "Continue with :provider": "المتابعة باستخدام :provider",
     "Sign-in with :provider failed. Please try again.": "تعذّر تسجيل الدخول عبر :provider. حاول مرة أخرى.",
-    "Your :provider account has no email address we can use.": "حسابك في :provider لا يحتوي على بريد إلكتروني يمكن استخدامه."
+    "Your :provider account has no email address we can use.": "حسابك في :provider لا يحتوي على بريد إلكتروني يمكن استخدامه.",
+    "New task assigned": "مهمة جديدة مُسندة إليك",
+    "Task overdue": "مهمة متأخرة",
+    "Meeting invitation": "دعوة إلى اجتماع",
+    "Meeting starting soon": "اجتماع سيبدأ قريباً",
+    "New message": "رسالة جديدة",
+    "New comment": "تعليق جديد",
+    "just now": "الآن",
+    ":name assigned you \":task\" in :project.": "أسند إليك :name مهمة \":task\" في :project.",
+    "\":task\" was due on :date.": "كان موعد تسليم \":task\" في :date.",
+    ":name invited you to \":meeting\" on :date.": "دعاك :name إلى \":meeting\" في :date.",
+    "\":meeting\" starts at :time in :place.": "يبدأ \":meeting\" الساعة :time في :place.",
+    "\":meeting\" starts at :time.": "يبدأ \":meeting\" الساعة :time.",
+    ":name in #:chat: \":text\"": ":name في #:chat: \":text\"",
+    ":name: \":text\"": ":name: \":text\"",
+    ":name commented on \":subject\": \":text\"": "علّق :name على \":subject\": \":text\""
 }

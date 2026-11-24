@@ -18,9 +18,12 @@ class TaskOverdue extends WorkspaceNotification
         return 'Task overdue';
     }
 
-    public function message(): string
+    public function line(): array
     {
-        return "\"{$this->task->title}\" was due on {$this->task->due_date->toFormattedDateString()}.";
+        return ['":task" was due on :date.', [
+            'task' => $this->task->title,
+            'date' => $this->task->due_date->toDateString(),
+        ]];
     }
 
     public function context(): array

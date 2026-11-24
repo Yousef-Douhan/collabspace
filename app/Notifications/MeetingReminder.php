@@ -19,10 +19,13 @@ class MeetingReminder extends WorkspaceNotification
         return 'Meeting starting soon';
     }
 
-    public function message(): string
+    public function line(): array
     {
-        return "\"{$this->meeting->title}\" starts at {$this->meeting->starts_at->format('H:i')}"
-            .($this->meeting->location ? " in {$this->meeting->location}" : '').'.';
+        $params = ['meeting' => $this->meeting->title, 'time' => $this->meeting->starts_at->format('H:i')];
+
+        return $this->meeting->location
+            ? ['":meeting" starts at :time in :place.', $params + ['place' => $this->meeting->location]]
+            : ['":meeting" starts at :time.', $params];
     }
 
     public function context(): array

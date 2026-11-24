@@ -16,6 +16,8 @@ use App\Models\Project;
 use App\Models\ProjectFile;
 use App\Models\Task;
 use App\Models\User;
+use App\Notifications\MessageReceived;
+use App\Notifications\TaskAssigned;
 use App\Services\FileService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
@@ -170,6 +172,21 @@ class DatabaseSeeder extends Seeder
             'reminder_minutes' => 60,
         ]);
         $planning->attendees()->attach([$lina->id, $ahmad->id, $omar->id]);
+
+        // --- Notifications ----------------------------------------------------
+        // The two comments above already notified the card's owner (the admin). Add a task
+        // hand-over and an unread DM, then spread them over the last few hours.
+        $aiSummaries = Task::where('title', 'Meeting AI summaries')->firstOrFail();
+        $admin->notify(new TaskAssigned($aiSummaries->load('project'), $lina));
+        $admin->notify(new MessageReceived($dm, $dm->messages()->latest('id')->firstOrFail(), $sara));
+        $minutesAgo = ['comment_added' => [190, 150], 'task_assigned' => [70], 'message_received' => [12]];
+        foreach ($admin->notifications()->get() as $notification) {
+            $ago = array_shift($minutesAgo[$notification->data['type']]) ?? 30;
+            $notification->forceFill([
+                'created_at' => now()->subMinutes($ago),
+                'read_at' => $ago > 180 ? now()->subMinutes($ago - 5) : null,   // the oldest one is already read
+            ])->save();
+        }
 
         // --- Activity --------------------------------------------------------
         foreach ([

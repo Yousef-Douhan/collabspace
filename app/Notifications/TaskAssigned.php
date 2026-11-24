@@ -19,9 +19,13 @@ class TaskAssigned extends WorkspaceNotification
         return 'New task assigned';
     }
 
-    public function message(): string
+    public function line(): array
     {
-        return "{$this->by->name} assigned you \"{$this->task->title}\" in {$this->task->project->name}.";
+        return [':name assigned you ":task" in :project.', [
+            'name' => $this->by->name,
+            'task' => $this->task->title,
+            'project' => $this->task->project->name,
+        ]];
     }
 
     public function context(): array

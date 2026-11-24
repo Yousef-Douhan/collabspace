@@ -110,33 +110,41 @@
                     </div>
                 </div>
 
-                {{-- Notifications --}}
-                <div x-data="{ open: false }" class="relative">
+                {{-- Notifications: rendered by the server, kept live over Reverb (notificationBell) --}}
+                <div x-data="notificationBell(@js(['channel' => 'App.Models.User.'.$user->id, 'unread' => $unread]))" class="relative">
                     <button type="button" @click="open = !open" class="relative inline-flex size-8 items-center justify-center rounded-full text-slate-600 transition hover:bg-white hover:text-brand hover:shadow-sm" title="{{ __('Notifications') }}" aria-label="{{ __('Notifications') }}">
-                        <svg @class(["size-[18px]", "bell-ring" => $unread]) fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-                        @if ($unread)
-                            <span class="absolute end-1.5 top-1.5 flex size-2"><span class="absolute inline-flex size-full animate-ping rounded-full bg-rose-400 opacity-75"></span><span class="relative inline-flex size-2 rounded-full bg-rose-500"></span></span>
-                        @endif
+                        <svg :class="{ 'bell-ring': ringing }" @class(['size-[18px]', 'bell-ring' => $unread]) fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                        <span x-cloak x-show="unread > 0" x-text="unread > 9 ? '9+' : unread"
+                              class="absolute -end-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-slate-100">{{ $unread ?: '' }}</span>
                     </button>
                     <div x-cloak x-show="open" @click.outside="open = false" x-transition.origin.top
-                         class="absolute end-0 mt-2 w-80 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+                         class="absolute end-0 z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
                         <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
                             <span class="text-sm font-semibold">{{ __('Notifications') }}</span>
-                            @if ($unread)
-                                <form method="POST" action="{{ route('notifications.read-all') }}">@csrf
-                                    <button class="text-xs text-brand">{{ __('Mark all read') }}</button>
-                                </form>
-                            @endif
+                            <form x-show="unread > 0" method="POST" action="{{ route('notifications.read-all') }}">@csrf
+                                <button class="text-xs text-brand">{{ __('Mark all read') }}</button>
+                            </form>
                         </div>
-                        @forelse ($latest as $n)
-                            <a href="{{ route('notifications.open', $n->id) }}" @class(['block border-b border-slate-50 px-4 py-3 text-sm hover:bg-slate-50', 'bg-brand-50/50' => ! $n->read_at])>
-                                <div class="font-medium">{{ $n->data['title'] ?? '' }}</div>
-                                <div class="text-xs text-slate-500">{{ $n->data['message'] ?? '' }}</div>
-                                <div class="mt-1 text-[11px] text-slate-400">{{ $n->created_at->diffForHumans() }}</div>
-                            </a>
-                        @empty
-                            <p class="px-4 py-6 text-center text-sm text-slate-400">{{ __('You\'re all caught up.') }}</p>
-                        @endforelse
+                        <div class="max-h-96 overflow-y-auto">
+                            {{-- New ones that arrived while the page was open --}}
+                            <template x-for="n in fresh" :key="n.id">
+                                <a :href="n.url" class="msg-in block border-b border-slate-50 bg-brand-50/50 px-4 py-3 text-sm hover:bg-slate-50">
+                                    <div class="font-medium" x-text="n.title"></div>
+                                    <div class="text-xs text-slate-500" dir="auto" x-text="n.message"></div>
+                                    <div class="mt-1 text-[11px] text-slate-400" x-text="n.time"></div>
+                                </a>
+                            </template>
+                            @forelse ($latest as $n)
+                                @php $text = \App\Notifications\WorkspaceNotification::present($n->data); @endphp
+                                <a href="{{ route('notifications.open', $n->id) }}" @class(['block border-b border-slate-50 px-4 py-3 text-sm hover:bg-slate-50', 'bg-brand-50/50' => ! $n->read_at])>
+                                    <div class="font-medium">{{ $text['title'] }}</div>
+                                    <div class="text-xs text-slate-500" dir="auto">{{ $text['message'] }}</div>
+                                    <div class="mt-1 text-[11px] text-slate-400">{{ $n->created_at->diffForHumans() }}</div>
+                                </a>
+                            @empty
+                                <p x-show="fresh.length === 0" class="px-4 py-6 text-center text-sm text-slate-400">{{ __('You\'re all caught up.') }}</p>
+                            @endforelse
+                        </div>
                         <a href="{{ route('notifications.index') }}" class="block px-4 py-2.5 text-center text-xs font-medium text-brand hover:bg-slate-50">{{ __('View all') }}</a>
                     </div>
                 </div>

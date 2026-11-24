@@ -25,6 +25,7 @@ class NotificationController extends Controller
         $data = $notification->data;
 
         return redirect(match (true) {
+            isset($data['conversation_id']) => route('chats.show', $data['conversation_id']),
             isset($data['task_id']) => route('tasks.show', $data['task_id']),
             isset($data['meeting_id']) => route('meetings.show', $data['meeting_id']),
             isset($data['project_id']) => route('projects.show', $data['project_id']),

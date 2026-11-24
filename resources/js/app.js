@@ -338,6 +338,30 @@ Alpine.data('liveDashboard', ({ projects = [], label = '' } = {}) => ({
 }));
 
 /**
+ * <div x-data="notificationBell({ channel, unread })">: the header bell.
+ * New notifications arrive over Reverb on the user's private channel: the counter goes up,
+ * the bell rings, the item appears at the top of the menu and a toast shows its title.
+ */
+Alpine.data('notificationBell', ({ channel, unread = 0 }) => ({
+    open: false,
+    unread,
+    fresh: [],
+    ringing: false,
+    init() {
+        if (!window.Echo || !channel) return;
+        window.Echo.private(channel).listen('.notification.created', (n) => {
+            this.unread = n.unread ?? this.unread + 1;
+            this.fresh.unshift(n);
+            this.fresh = this.fresh.slice(0, 5);
+            this.ringing = false;
+            requestAnimationFrame(() => (this.ringing = true));
+            setTimeout(() => (this.ringing = false), 1600);
+            this.$dispatch('realtime-toast', `${n.title}: ${n.message}`);
+        });
+    },
+}));
+
+/**
  * Navbar search history (Figma "Recent Searches" overlay). Stored in this browser only;
  * storage can be unavailable (private mode), so every access is guarded.
  */

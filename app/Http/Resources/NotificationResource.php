@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Notifications\WorkspaceNotification;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Notifications\DatabaseNotification;
@@ -17,7 +18,8 @@ class NotificationResource extends JsonResource
             'type' => $this->data['type'] ?? null,
             'title' => $this->data['title'] ?? null,
             'message' => $this->data['message'] ?? null,
-            'data' => Arr::except($this->data, ['type', 'title', 'message']),
+            'display' => WorkspaceNotification::present($this->data),   // in the request's language
+            'data' => Arr::except($this->data, ['type', 'title', 'message', 'line_key', 'line_params']),
             'read_at' => $this->read_at?->toIso8601String(),
             'created_at' => $this->created_at?->toIso8601String(),
         ];

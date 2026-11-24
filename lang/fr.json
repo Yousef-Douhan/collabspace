@@ -438,5 +438,20 @@
     "or continue with": "ou continuer avec",
     "Continue with :provider": "Continuer avec :provider",
     "Sign-in with :provider failed. Please try again.": "La connexion avec :provider a échoué. Veuillez réessayer.",
-    "Your :provider account has no email address we can use.": "Votre compte :provider n'a pas d'adresse e-mail utilisable."
+    "Your :provider account has no email address we can use.": "Votre compte :provider n'a pas d'adresse e-mail utilisable.",
+    "New task assigned": "Nouvelle tâche assignée",
+    "Task overdue": "Tâche en retard",
+    "Meeting invitation": "Invitation à une réunion",
+    "Meeting starting soon": "La réunion commence bientôt",
+    "New message": "Nouveau message",
+    "New comment": "Nouveau commentaire",
+    "just now": "à l'instant",
+    ":name assigned you \":task\" in :project.": ":name vous a assigné « :task » dans :project.",
+    "\":task\" was due on :date.": "« :task » était à rendre le :date.",
+    ":name invited you to \":meeting\" on :date.": ":name vous a invité à « :meeting » le :date.",
+    "\":meeting\" starts at :time in :place.": "« :meeting » commence à :time à :place.",
+    "\":meeting\" starts at :time.": "« :meeting » commence à :time.",
+    ":name in #:chat: \":text\"": ":name dans #:chat : « :text »",
+    ":name: \":text\"": ":name : « :text »",
+    ":name commented on \":subject\": \":text\"": ":name a commenté « :subject » : « :text »"
 }
