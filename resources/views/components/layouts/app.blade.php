@@ -41,13 +41,12 @@
 </head>
 <body class="min-h-screen bg-canvas font-sans text-ink antialiased">
     {{-- Top bar (Figma: wordmark · pill nav · search · bell · user) --}}
-    <header class="sticky top-0 z-30 border-b border-slate-200/70 bg-white print:hidden">
+    <header x-data="{ menu: false }" @keydown.escape.window="menu = false" class="sticky top-0 z-30 border-b border-slate-200/70 bg-white print:hidden">
         <div class="mx-auto flex h-16 max-w-[1360px] items-center gap-3 px-4 sm:px-6 xl:gap-6">
             <a href="{{ route('dashboard') }}" class="shrink-0 text-lg font-semibold tracking-tight">Collabspace</a>
 
-            {{-- On narrow screens the menu scrolls sideways instead of pushing the toolbar off-screen. --}}
-            <nav class="flex min-w-0 items-center gap-1 overflow-x-auto rounded-full bg-slate-100 p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                 x-data x-init="$el.querySelector('.bg-brand')?.scrollIntoView({ inline: 'center', block: 'nearest' })">
+            {{-- Pill nav on wide screens; below lg it moves into the ☰ menu. --}}
+            <nav class="hidden items-center gap-1 rounded-full bg-slate-100 p-1 lg:flex">
                 @foreach ($nav as [$label, $route, $pattern])
                     <a href="{{ route($route) }}"
                        @class([
@@ -176,7 +175,29 @@
                     </form>
                 </div>
             </div>
+
+            {{-- ☰ / ✕ toggle for the menu on narrow screens --}}
+            <button type="button" @click="menu = !menu" :aria-expanded="menu.toString()" aria-controls="mobile-nav"
+                    class="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:text-brand lg:hidden"
+                    title="{{ __('Menu') }}" aria-label="{{ __('Menu') }}">
+                <svg x-show="!menu" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+                <svg x-cloak x-show="menu" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
         </div>
+
+        <nav id="mobile-nav" x-cloak x-show="menu" x-transition.origin.top
+             class="border-t border-slate-200/70 bg-white px-4 py-3 shadow-lg sm:px-6 lg:hidden">
+            <div class="mx-auto grid max-w-[1360px] grid-cols-2 gap-1.5 sm:grid-cols-4">
+                @foreach ($nav as [$label, $route, $pattern])
+                    <a href="{{ route($route) }}"
+                       @class([
+                           'rounded-xl px-3 py-2.5 text-sm font-medium transition',
+                           'bg-brand text-white shadow-sm' => request()->routeIs($pattern),
+                           'bg-slate-50 text-slate-700 hover:bg-slate-100' => ! request()->routeIs($pattern),
+                       ])>{{ __($label) }}</a>
+                @endforeach
+            </div>
+        </nav>
     </header>
 
     <main class="mx-auto max-w-[1360px] px-6 py-8">
