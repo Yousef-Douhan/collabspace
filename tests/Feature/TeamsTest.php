@@ -26,7 +26,7 @@ class TeamsTest extends TestCase
 
     private function ownedProject(User $owner): Project
     {
-        return $this->projectWith($owner, [[$owner, ProjectRole::Owner]]);
+        return $this->projectWith($owner); // the factory already adds the owner as a member
     }
 
     public function test_a_manager_creates_a_team_and_becomes_its_lead(): void
