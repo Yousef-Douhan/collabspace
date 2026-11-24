@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\Track;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Web\PasswordResetController;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\UserResource;
@@ -12,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -52,6 +54,26 @@ class AuthController extends Controller
         }
 
         return $this->tokenResponse($user, $data['device_name'] ?? null);
+    }
+
+    /** POST /auth/forgot-password — always 202, whether or not the e-mail has an account. */
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        PasswordResetController::sendLink($request->validate(['email' => ['required', 'email']])['email']);
+
+        return response()->json(['message' => __('If an account exists for this email, a reset link is on its way.')], Response::HTTP_ACCEPTED);
+    }
+
+    /** POST /auth/reset-password — token from the e-mailed link; revokes every API token. */
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $status = PasswordResetController::reset($request->validate(PasswordResetController::resetRules()));
+
+        if ($status !== Password::PASSWORD_RESET) {
+            throw ValidationException::withMessages(['email' => [__($status)]]);
+        }
+
+        return response()->json(['message' => __($status)]);
     }
 
     public function logout(Request $request): Response

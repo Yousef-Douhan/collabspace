@@ -10,6 +10,7 @@ use App\Http\Requests\Project\StoreProjectRequest;
 use App\Http\Requests\Project\UpdateProjectRequest;
 use App\Http\Requests\Project\UpdateWikiRequest;
 use App\Models\Project;
+use App\Models\Team;
 use App\Models\User;
 use App\Services\ProjectService;
 use Illuminate\Database\Eloquent\Builder;
@@ -53,7 +54,7 @@ class ProjectController extends Controller
     {
         Gate::authorize('view', $project);
 
-        $project->load(['owner', 'members', 'files.uploader', 'tasks.assignees'])
+        $project->load(['owner', 'members', 'files.uploader', 'tasks.assignees', 'teams' => fn ($q) => $q->withCount('members')])
             ->loadCount(['tasks', 'tasks as completed_tasks_count' => fn (Builder $q) => $q->where('status', TaskStatus::Completed)]);
 
         $byStatus = $project->tasks->groupBy(fn ($t) => $t->status->value);
@@ -65,6 +66,7 @@ class ProjectController extends Controller
             'canManage' => $project->isManagedBy($request->user()),
             'users' => User::whereNotIn('id', $project->members->pluck('id'))->orderBy('name')->get(['id', 'name']),
             'roles' => ProjectRole::cases(),
+            'availableTeams' => Team::withCount('members')->whereNotIn('id', $project->teams->pluck('id'))->orderBy('name')->get(),
         ]);
     }
 

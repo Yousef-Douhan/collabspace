@@ -9,12 +9,14 @@ use App\Http\Controllers\Web\FileController;
 use App\Http\Controllers\Web\MeetingController;
 use App\Http\Controllers\Web\MemberController;
 use App\Http\Controllers\Web\NotificationController;
+use App\Http\Controllers\Web\PasswordResetController;
 use App\Http\Controllers\Web\PlannerController;
 use App\Http\Controllers\Web\ProjectController;
 use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\SearchController;
 use App\Http\Controllers\Web\SocialAuthController;
 use App\Http\Controllers\Web\TaskController;
+use App\Http\Controllers\Web\TeamController;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -44,6 +46,12 @@ Route::middleware('guest')->group(function () {
     Route::get('register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('register', [AuthController::class, 'register']);
 
+    // Forgot / reset password (the e-mailed link opens password.reset)
+    Route::get('forgot-password', [PasswordResetController::class, 'request'])->name('password.request');
+    Route::post('forgot-password', [PasswordResetController::class, 'email'])->middleware('throttle:5,1')->name('password.email');
+    Route::get('reset-password/{token}', [PasswordResetController::class, 'edit'])->name('password.reset');
+    Route::post('reset-password', [PasswordResetController::class, 'update'])->middleware('throttle:10,1')->name('password.update');
+
     // Continue with GitHub / Google (Socialite)
     Route::get('auth/{provider}/redirect', [SocialAuthController::class, 'redirect'])
         ->whereIn('provider', array_keys(SocialAuthController::PROVIDERS))->middleware('throttle:20,1')->name('social.redirect');
@@ -66,6 +74,18 @@ Route::middleware('auth')->group(function () {
     Route::put('projects/{project}/wiki', [ProjectController::class, 'updateWiki'])->name('projects.wiki');
     Route::post('projects/{project}/members', [ProjectController::class, 'addMember'])->name('projects.members.store');
     Route::delete('projects/{project}/members/{user}', [ProjectController::class, 'removeMember'])->name('projects.members.destroy');
+
+    // Teams
+    Route::get('teams', [TeamController::class, 'index'])->name('teams.index');
+    Route::post('teams', [TeamController::class, 'store'])->name('teams.store');
+    Route::get('teams/{team}', [TeamController::class, 'show'])->name('teams.show');
+    Route::put('teams/{team}', [TeamController::class, 'update'])->name('teams.update');
+    Route::delete('teams/{team}', [TeamController::class, 'destroy'])->name('teams.destroy');
+    Route::post('teams/{team}/members', [TeamController::class, 'addMember'])->name('teams.members.store');
+    Route::patch('teams/{team}/members/{user}', [TeamController::class, 'updateMember'])->name('teams.members.update');
+    Route::delete('teams/{team}/members/{user}', [TeamController::class, 'removeMember'])->name('teams.members.destroy');
+    Route::post('teams/{team}/projects', [TeamController::class, 'attachProject'])->name('teams.projects.store');
+    Route::delete('teams/{team}/projects/{project}', [TeamController::class, 'detachProject'])->name('teams.projects.destroy');
 
     // Tasks (Kanban)
     Route::get('tasks', [TaskController::class, 'index'])->name('tasks.index');

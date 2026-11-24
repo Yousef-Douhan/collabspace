@@ -104,6 +104,11 @@ class Project extends Model
             ->withTimestamps();
     }
 
+    public function teams(): BelongsToMany
+    {
+        return $this->belongsToMany(Team::class)->withTimestamps();
+    }
+
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);

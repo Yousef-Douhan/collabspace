@@ -15,6 +15,7 @@ use App\Models\Meeting;
 use App\Models\Project;
 use App\Models\ProjectFile;
 use App\Models\Task;
+use App\Models\Team;
 use App\Models\User;
 use App\Notifications\MessageReceived;
 use App\Notifications\TaskAssigned;
@@ -68,6 +69,18 @@ class DatabaseSeeder extends Seeder
             $ahmad->id => ['role' => ProjectRole::Member->value],
             $omar->id => ['role' => ProjectRole::Member->value],
         ]);
+
+        // --- Teams (members already belong to the linked projects) ------------
+        $teams = [
+            ['Backend Squad', 'APIs, auth, database and the realtime layer.', $admin, [$sara->id => 'lead', $admin->id => 'member'], [$alpha]],
+            ['Design Studio', 'UI/UX and visual design across all products.', $lina, [$lina->id => 'lead', $ahmad->id => 'member'], [$nova]],
+            ['Mobile Crew', 'Builds and ships the Nova companion app.', $lina, [$omar->id => 'lead', $lina->id => 'member', $ahmad->id => 'member'], [$nova]],
+        ];
+        foreach ($teams as [$name, $description, $creator, $members, $linked]) {
+            $team = Team::create(['name' => $name, 'description' => $description, 'created_by' => $creator->id]);
+            $team->members()->attach(collect($members)->map(fn ($role) => ['role' => $role])->all());
+            $team->projects()->attach(collect($linked)->pluck('id'));
+        }
 
         // --- Tasks -------------------------------------------------------------
         $tasks = [

@@ -7,6 +7,7 @@ use App\Models\Meeting;
 use App\Models\Project;
 use App\Models\ProjectFile;
 use App\Models\Task;
+use App\Models\Team;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -27,6 +28,7 @@ class DatabaseSeederTest extends TestCase
         $this->assertSame(9, Task::count());
         $this->assertSame(3, Conversation::count());
         $this->assertSame(2, Meeting::count());
+        $this->assertSame(3, Team::count());
 
         // Every seeded file really exists on disk, so downloads work.
         ProjectFile::all()->each(fn (ProjectFile $file) => Storage::disk('local')->assertExists($file->path));

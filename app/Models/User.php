@@ -6,6 +6,7 @@ use App\Enums\Availability;
 use App\Enums\Track;
 use App\Enums\UserRole;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,7 +15,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements HasLocalePreference
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
@@ -65,6 +66,12 @@ class User extends Authenticatable
         ];
     }
 
+    /** E-mails (password reset, meeting invitations…) go out in the user's language. */
+    public function preferredLocale(): string
+    {
+        return $this->locale ?: config('app.locale');
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;
@@ -88,6 +95,11 @@ class User extends Authenticatable
         return $this->belongsToMany(Project::class, 'project_members')
             ->withPivot('role')
             ->withTimestamps();
+    }
+
+    public function teams(): BelongsToMany
+    {
+        return $this->belongsToMany(Team::class)->withPivot('role')->withTimestamps();
     }
 
     public function ownedProjects(): HasMany

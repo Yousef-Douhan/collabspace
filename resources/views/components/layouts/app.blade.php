@@ -4,6 +4,7 @@
     $nav = [
         ['Dashboard', 'dashboard', 'dashboard'],
         ['Projects', 'projects.index', 'projects.*'],
+        ['Teams', 'teams.index', 'teams.*'],
         ['Tasks', 'tasks.index', 'tasks.*'],
         ['Chats', 'chats.index', 'chats.*'],
         ['Meetings', 'meetings.index', 'meetings.*'],
@@ -48,7 +49,7 @@
                 @foreach ($nav as [$label, $route, $pattern])
                     <a href="{{ route($route) }}"
                        @class([
-                           'whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-medium transition',
+                           'whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition xl:px-3.5',
                            'bg-brand text-white shadow-sm' => request()->routeIs($pattern),
                            'text-slate-600 hover:text-slate-900' => ! request()->routeIs($pattern),
                        ])>{{ __($label) }}</a>

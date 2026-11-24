@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\V1\ProjectMemberController;
 use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\SearchController;
 use App\Http\Controllers\Api\V1\TaskController;
+use App\Http\Controllers\Api\V1\TeamController;
 use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Web\PlannerController;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::prefix('auth')->name('auth.')->middleware('throttle:10,1')->group(function () {
         Route::post('register', [AuthController::class, 'register'])->name('register');
         Route::post('login', [AuthController::class, 'login'])->name('login');
+        Route::post('forgot-password', [AuthController::class, 'forgotPassword'])->name('forgot-password');
+        Route::post('reset-password', [AuthController::class, 'resetPassword'])->name('reset-password');
     });
 
     // --- Authenticated ----------------------------------------------------
@@ -59,6 +62,14 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('projects/{project}/members', [ProjectMemberController::class, 'index'])->name('projects.members.index');
         Route::post('projects/{project}/members', [ProjectMemberController::class, 'store'])->name('projects.members.store');
         Route::delete('projects/{project}/members/{user}', [ProjectMemberController::class, 'destroy'])->name('projects.members.destroy');
+        Route::post('projects/{project}/teams', [TeamController::class, 'attach'])->name('projects.teams.store');
+        Route::delete('projects/{project}/teams/{team}', [TeamController::class, 'detach'])->name('projects.teams.destroy');
+
+        // Teams
+        Route::apiResource('teams', TeamController::class);
+        Route::post('teams/{team}/members', [TeamController::class, 'addMember'])->name('teams.members.store');
+        Route::patch('teams/{team}/members/{user}', [TeamController::class, 'updateMember'])->name('teams.members.update');
+        Route::delete('teams/{team}/members/{user}', [TeamController::class, 'removeMember'])->name('teams.members.destroy');
 
         // --- Tasks (Kanban) ----------------------------------------------
         Route::apiResource('tasks', TaskController::class);

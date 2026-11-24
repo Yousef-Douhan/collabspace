@@ -4,6 +4,10 @@
         <p class="mt-1 text-sm text-slate-500">{{ __('Welcome back, you\'ve been missed!') }}</p>
     </div>
 
+    @if (session('status'))
+        <p class="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{{ session('status') }}</p>
+    @endif
+
     <form method="POST" action="{{ route('login') }}" class="mt-8 space-y-4">
         @csrf
         <div>
@@ -17,6 +21,7 @@
         </div>
         <div class="flex items-center justify-between text-sm">
             <label class="flex items-center gap-2 text-slate-600"><input type="checkbox" name="remember" class="rounded border-slate-300 text-brand"> {{ __('Remember Me') }}</label>
+            <a href="{{ route('password.request') }}" class="font-medium text-brand hover:underline">{{ __('Forgot password?') }}</a>
         </div>
         <button class="btn-primary w-full">{{ __('Log in') }}</button>
     </form>

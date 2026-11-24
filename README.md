@@ -11,7 +11,8 @@ Built with Laravel 13 for the **Huma-volve CollabSpace Challenge** · Figma: *Co
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
 ![Alpine.js](https://img.shields.io/badge/Alpine.js-3-8BC0D0?logo=alpinedotjs&logoColor=white)
 [![CI](https://github.com/Yousef-Douhan/collabspace/actions/workflows/ci.yml/badge.svg)](https://github.com/Yousef-Douhan/collabspace/actions/workflows/ci.yml)
-![Tests](https://img.shields.io/badge/tests-120_passing-2EA44F)
+![Tests](https://img.shields.io/badge/tests-150%2B_passing-2EA44F)
+![Larastan](https://img.shields.io/badge/Larastan-level_5-2A5EA7)
 ![Realtime](https://img.shields.io/badge/realtime-Laravel_Reverb-FF2D20?logo=laravel&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-one_command-2496ED?logo=docker&logoColor=white)
 ![i18n](https://img.shields.io/badge/i18n-English_%7C_Arabic_(RTL)_%7C_French-0B5FFF)
@@ -37,11 +38,11 @@ CollabSpace gives a team one place to plan work, talk, meet and see progress. On
 | Client | Auth | Purpose |
 |---|---|---|
 | **Blade web app** | Session | The full UI from the Figma design, in English, Arabic (RTL) and French |
-| **REST API** `/api/v1` | Sanctum tokens | For mobile and SPA clients. Ships with a 80-request Postman collection |
+| **REST API** `/api/v1` | Sanctum tokens | For mobile and SPA clients. Ships with a 92-request Postman collection |
 
 Both clients go through the **same Form Requests, Policies and Services**, so validation, permissions and business rules are defined once.
 
-> **نبذة بالعربية:** منصة تعاون للفرق، فيها إدارة المشاريع، ولوحة مهام Kanban بالسحب والإفلات، ومحادثات مع علامات القراءة، واجتماعات بتقويم أسبوعي وملخص بالذكاء الاصطناعي، وتقارير ورسوم بيانية، ومساعد ذكي يجيب من بيانات الفريق. الواجهة كاملة بالعربية والإنجليزية والفرنسية مع دعم الكتابة من اليمين لليسار، ومعها REST API موثّق و120 اختباراً آلياً. الرسائل ولوحة المهام تتحدث فورياً عبر Laravel Reverb، ويعمل المشروع كاملاً بأمر Docker واحد.
+> **نبذة بالعربية:** منصة تعاون للفرق، فيها إدارة المشاريع، ولوحة مهام Kanban بالسحب والإفلات، ومحادثات مع علامات القراءة، واجتماعات بتقويم أسبوعي وملخص بالذكاء الاصطناعي، وتقارير ورسوم بيانية، ومساعد ذكي يجيب من بيانات الفريق. الواجهة كاملة بالعربية والإنجليزية والفرنسية مع دعم الكتابة من اليمين لليسار، ومعها REST API موثّق وأكثر من 150 اختباراً آلياً. الرسائل ولوحة المهام تتحدث فورياً عبر Laravel Reverb، ويعمل المشروع كاملاً بأمر Docker واحد.
 
 ---
 
@@ -50,6 +51,7 @@ Both clients go through the **same Form Requests, Policies and Services**, so va
 ### Work management
 
 - **Projects:** status, priority, start and deadline dates, live completion %, members with roles (owner, manager, member), and a Markdown wiki.
+- **Teams:** named groups with **lead / member** roles (a team always keeps a lead). Link a team to a project and every member joins it; someone who joins the team later joins its projects too. Unlinking never removes people from a project.
 - **Kanban tasks:** filters by project, my tasks, overdue or due this week, and priority. Drag & drop across *To-do → In Progress → In Review → Completed*. Tasks have priorities, tracks (UI/UX, Front End, Back End, Graphic Design), assignees and a reviewer, progress, estimated hours, due dates with overdue highlighting, comments and attachments.
 - **Files:** private per-project and per-task storage. Downloads are allowed only for members.
 
@@ -74,6 +76,7 @@ Both clients go through the **same Form Requests, Policies and Services**, so va
 - **Three languages:** an English / العربية / Français menu, with a full right-to-left layout for Arabic and translated dates, validation messages and chart axes.
 - **Search:** global search, with a *Recent Searches* list under the search bar.
 - **Profiles:** completed tasks, hours worked, recent activity, avatar, and a password change.
+- **Accounts:** sign in with email, GitHub or Google; **forgot / reset password** by e-mail (web and API). The reset form never reveals which addresses exist, and a reset signs out every API token.
 
 ### Administration
 
@@ -215,9 +218,10 @@ curl -X PATCH http://127.0.0.1:8000/api/v1/tasks/5/move \
 
 | Group | Highlights |
 |---|---|
-| `auth`, `profile` | register, login, logout, me, profile update, avatar, password |
+| `auth`, `profile` | register, login, logout, **forgot / reset password**, me, profile update, avatar, password |
 | `users` | team directory with filters, member profile and stats |
-| `projects` | CRUD, members and roles, wiki |
+| `projects` | CRUD, members and roles, wiki, linked teams |
+| `teams` | CRUD, members with `lead` / `member` roles, link to and unlink from projects |
 | `tasks` | CRUD, board view, `move` (Kanban), reviewer, comments, filters (`mine`, `overdue`) |
 | `files` | upload, private download, delete |
 | `conversations` | direct and channel chats, messages, edit and delete, read receipts, pin and archive |
@@ -290,9 +294,10 @@ tests/Feature/                Api/ · Web/
 
 ```bash
 php artisan test
+vendor/bin/phpstan analyse   # or: composer analyse
 ```
 
-**120 tests, all passing.** GitHub Actions runs them, plus a Laravel Pint style check and a production asset build, on every push. The suite runs on in-memory SQLite and fakes every AI call, so it needs no database or API key.
+**150+ tests, all passing.** GitHub Actions runs them, plus a Laravel Pint style check, **Larastan static analysis (level 5)** and a production asset build, on every push. The suite runs on in-memory SQLite and fakes every AI call, so it needs no database or API key.
 
 | Suite | Coverage |
 |---|---|
@@ -303,6 +308,8 @@ php artisan test
 | `Feature/FigmaExtrasTest` | Dashboard duration and team filters, the overdue filter, the New Meeting form (duration, attachments, email and Slack), report print and AI draft, the French UI |
 | `Feature/AdminTest` | Admin-only access, role changes, the last-admin and self-protection rules, deactivation ending web and API sessions, admin API |
 | `Feature/RealtimeTest` | Chat and Kanban broadcast the right events; only participants / project members can subscribe; the payload carries no message text; a dead WebSocket server never breaks a request |
+| `Feature/TeamsTest` | Team CRUD, lead-only management, the last-lead rule, linking a team adds its people to the project (roles kept), the Teams API |
+| `Feature/Web/PasswordResetTest` | Reset e-mail without revealing accounts, the reset form, bad tokens, API endpoints, tokens revoked |
 | `Feature/DatabaseSeederTest` | The demo workspace is consistent |
 
 ---
@@ -316,7 +323,7 @@ php artisan test
 | Frontend | Blade components · Tailwind CSS 4 · Alpine.js · Laravel Echo · SortableJS · Chart.js · Vite 8 |
 | AI | Google Gemini (default) · OpenAI · Anthropic, called over plain HTTP |
 | DevOps | Docker (Nginx + PHP-FPM + Reverb, supervisord) · Render Blueprint · GitHub Actions CI |
-| Tooling | PHPUnit · Pint · Postman |
+| Tooling | PHPUnit · Pint · Larastan (PHPStan) · Postman |
 
 ---
 

@@ -118,6 +118,41 @@
         </div>
         <div class="mt-4 text-end"><a href="{{ route('tasks.index', ['project_id' => $project->id]) }}" class="btn-ghost">{{ __('Open board ›') }}</a></div>
     @elseif ($tab === 'teams')
+        {{-- Teams linked to this project: linking adds all of a team's people as members. --}}
+        <div class="card mb-4 p-5">
+            <div class="mb-3 flex items-center justify-between">
+                <h3 class="font-semibold">{{ __('Linked teams') }}</h3>
+                <a href="{{ route('teams.index') }}" class="text-xs text-brand">{{ __('All teams ›') }}</a>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                @forelse ($project->teams as $team)
+                    <span class="inline-flex items-center gap-2 rounded-full border border-slate-200 py-1 ps-1 pe-3 text-sm">
+                        <span class="grid size-6 place-items-center rounded-full text-[10px] font-bold {{ $team->colorClasses() }}">{{ $team->initials() }}</span>
+                        <a href="{{ route('teams.show', $team) }}" class="font-medium">{{ $team->name }}</a>
+                        <span class="text-xs text-slate-400">{{ $team->members_count }}</span>
+                        @if ($canManage)
+                            <form method="POST" action="{{ route('teams.projects.destroy', [$team, $project]) }}" onsubmit="return confirm(@js(__('Unlink :team? Its members stay in the project.', ['team' => $team->name])))">
+                                @csrf @method('DELETE')
+                                <button class="text-slate-400 hover:text-rose-600" aria-label="{{ __('Remove') }}">×</button>
+                            </form>
+                        @endif
+                    </span>
+                @empty
+                    <p class="text-sm text-slate-500">{{ __('No teams linked yet.') }}</p>
+                @endforelse
+            </div>
+            @if ($canManage && $availableTeams->isNotEmpty())
+                <form method="POST" x-data="{ team: '{{ $availableTeams->first()->id }}' }" :action="@js(url('teams')) + '/' + team + '/projects'" class="mt-4 flex flex-wrap items-end gap-3">
+                    @csrf
+                    <input type="hidden" name="project_id" value="{{ $project->id }}">
+                    <div class="min-w-56 flex-1"><label class="label">{{ __('Link a team') }}</label>
+                        <select x-model="team" class="input">@foreach ($availableTeams as $t)<option value="{{ $t->id }}">{{ $t->name }} ({{ $t->members_count }})</option>@endforeach</select>
+                    </div>
+                    <button class="btn-primary">{{ __('Link team') }}</button>
+                </form>
+            @endif
+        </div>
+
         <div class="card divide-y divide-slate-50">
             @foreach ($project->members as $m)
                 <div class="flex items-center gap-4 px-5 py-3">
