@@ -14,8 +14,8 @@
 
     <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
         <h2 class="font-semibold">{{ __('All Files') }}</h2>
-        <form class="flex gap-2">
-            <input name="q" value="{{ request('q') }}" placeholder="{{ __('Search files') }}" class="input w-56 rounded-full">
+        <form class="flex w-full flex-wrap gap-2 sm:w-auto">
+            <input name="q" value="{{ request('q') }}" placeholder="{{ __('Search files') }}" class="input min-w-0 flex-1 rounded-full sm:w-56 sm:flex-none">
             <select name="project_id" onchange="this.form.submit()" class="input w-auto rounded-full">
                 <option value="">{{ __('All projects') }}</option>
                 @foreach ($projects as $p)<option value="{{ $p->id }}" @selected(request('project_id') == $p->id)>{{ $p->name }}</option>@endforeach
