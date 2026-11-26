@@ -290,6 +290,33 @@ tests/Feature/                Api/ · Web/
 
 ---
 
+## 🔒 Security & performance highlights
+
+**Security**
+
+| Area | What the code does |
+|---|---|
+| **Authorization** | Every model goes through a Policy, and lists go through `visibleTo($user)` scopes. A user never sees another team's project, file, chat or meeting, and neither does the AI assistant. |
+| **API tokens** | Sanctum tokens **expire after 30 days** (`SANCTUM_EXPIRATION`). Changing a password revokes every other token, a password reset revokes all of them, and deactivating a user revokes them at once. |
+| **Brute force & abuse** | Rate limits on every sensitive route: login `10/min`, forgot password `5/min`, reset `10/min`, social login `20/min`, AI ask `20/min`, AI planner and report drafts `10/min`. |
+| **No account enumeration** | "Forgot password" returns the same answer whether or not the e-mail exists. |
+| **Private files** | Uploads live on the private `local` disk. There is no public URL; every download is a policy-checked `Storage::download` sent as an attachment. |
+| **Upload filtering** | A `SafeUpload` rule rejects files a browser or server could execute (`.php`, `.phar`, `.html`, `.svg`, `.js`, `.exe`, `.sh` …), including double extensions such as `invoice.php.pdf`. Max 20 MB. |
+| **Private realtime channels** | Reverb channels are private and authorized per project or conversation. The socket payload carries IDs only, never the message text. |
+| **XSS & CSRF** | Markdown is rendered with raw HTML stripped, Blade escapes output by default, and every web form carries a CSRF token. |
+| **Production config** | `APP_DEBUG=false` in production; secrets live in environment variables, never in the repository. |
+
+**Performance**
+
+| Area | What the code does |
+|---|---|
+| **Indexes** | Composite indexes on the hot queries: tasks `(project_id, status, position)`, activity `(project_id, created_at)`, messages `(conversation_id, id)`, AI history `(user_id, id)`, plus `meetings.starts_at` and `projects.status`. |
+| **Pagination** | Chat history uses **cursor pagination**, so loading older messages stays fast however long the conversation is. API lists (projects, tasks, files, meetings, reports, users, notifications) are paginated with `per_page` capped at 100. |
+| **No N+1** | Relations are eager-loaded in services and API resources. |
+| **Kanban moves** | One transaction re-numbers both columns, instead of many separate updates. |
+
+---
+
 ## 🧪 Testing
 
 ```bash

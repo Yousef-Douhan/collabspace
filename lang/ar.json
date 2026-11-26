@@ -504,5 +504,6 @@
     "Unlink :team? Its members stay in the project.": "فك ربط :team؟ سيبقى أعضاؤه في المشروع.",
     "You will be the team lead.": "ستكون أنت قائد الفريق.",
     "Team lead": "قائد الفريق",
-    "Menu": "القائمة"
+    "Menu": "القائمة",
+    "This file type is not allowed.": "نوع هذا الملف غير مسموح به."
 }

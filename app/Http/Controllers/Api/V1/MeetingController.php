@@ -10,6 +10,7 @@ use App\Http\Resources\MeetingAttachmentResource;
 use App\Http\Resources\MeetingResource;
 use App\Models\Meeting;
 use App\Models\MeetingAttachment;
+use App\Rules\SafeUpload;
 use App\Services\MeetingService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -120,7 +121,7 @@ class MeetingController extends Controller
     {
         Gate::authorize('summarize', $meeting);
 
-        $request->validate(['file' => ['required', 'file', 'max:20480']]);
+        $request->validate(['file' => ['required', 'file', 'max:20480', new SafeUpload]]);
         $file = $request->file('file');
 
         $attachment = $meeting->attachments()->create([

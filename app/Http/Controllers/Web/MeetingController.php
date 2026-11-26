@@ -10,6 +10,7 @@ use App\Models\Meeting;
 use App\Models\MeetingAttachment;
 use App\Models\Project;
 use App\Models\User;
+use App\Rules\SafeUpload;
 use App\Services\MeetingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -49,7 +50,7 @@ class MeetingController extends Controller
 
     public function store(StoreMeetingRequest $request): RedirectResponse
     {
-        $request->validate(['attachments' => ['nullable', 'array', 'max:10'], 'attachments.*' => ['file', 'max:20480']]);
+        $request->validate(['attachments' => ['nullable', 'array', 'max:10'], 'attachments.*' => ['file', 'max:20480', new SafeUpload]]);
 
         $meeting = $this->meetings->create($request->user(), $request->validated());
 
@@ -139,7 +140,7 @@ class MeetingController extends Controller
     {
         Gate::authorize('summarize', $meeting);
 
-        $request->validate(['file' => ['required', 'file', 'max:20480']]);
+        $request->validate(['file' => ['required', 'file', 'max:20480', new SafeUpload]]);
         $this->addAttachment($meeting, $request->user()->id, $request->file('file'));
 
         return back()->with('status', __('Attachment uploaded.'));
