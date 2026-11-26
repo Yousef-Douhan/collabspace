@@ -21,9 +21,11 @@ Built with Laravel 13 for the **Huma-volve CollabSpace Challenge** · Figma: *Co
 
 ### ▶️ [Watch the 1-minute demo video](https://youtu.be/gzkJ8Fmxl0U)
 
+### 📘 [API documentation (Postman)](https://documenter.getpostman.com/view/45494637/2sBYPv5ZQC)
+
 Sign in with **`admin@collabspace.test`** / **`password`** · free hosting: the first visit after a quiet period can take about a minute to wake up.
 
-[Overview](#-overview) · [Features](#-features) · [Screenshots](#-screenshots) · [Quick start](#-quick-start) · [Docker](#-docker-one-command) · [API](#-rest-api) · [Architecture](#-architecture) · [Testing](#-testing)
+[Overview](#-overview) · [Features](#-features) · [Screenshots](#-screenshots) · [Quick start](#-quick-start) · [Docker](#-docker-one-command) · [API](#-rest-api) · [Architecture](#-architecture) · [Security](#-security--performance-highlights) · [Testing](#-testing)
 
 <img src="docs/screenshots/dashboard.png" alt="CollabSpace dashboard" width="100%">
 
@@ -196,6 +198,7 @@ The same image runs the **[live demo](https://collabspace-s3qk.onrender.com)** o
 | **Auth** | `POST /auth/login` returns a token; send it as `Authorization: Bearer <token>` |
 | **Language** | `Accept-Language: ar` returns Arabic labels and messages |
 | **Errors** | Always JSON: `401`, `403`, `404`, `422` (with field errors), `429`, `503` (AI) |
+| **API docs** | [Published Postman documentation](https://documenter.getpostman.com/view/45494637/2sBYPv5ZQC), browsable online with every request |
 | **Postman** | [`docs/postman/CollabSpace.postman_collection.json`](docs/postman/CollabSpace.postman_collection.json) |
 | **Full reference** | [`docs/DESIGN.md`](docs/DESIGN.md), covering every endpoint and the database schema |
 
