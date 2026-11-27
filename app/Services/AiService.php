@@ -53,21 +53,48 @@ class AiService
         return $text;
     }
 
-    /** Ask for JSON and decode it (tolerates ```json fences or text around the object). */
-    public function chatJson(string $system, string $user, int $maxTokens = 1000): array
+    /**
+     * Ask for JSON and decode it (tolerates ```json fences or text around the object).
+     *
+     * Reasoning models spend part of the output budget on hidden "thinking", so a tight
+     * budget can cut the JSON off mid-object. If the answer cannot be decoded, ask once
+     * more with a larger budget before giving up.
+     */
+    public function chatJson(string $system, string $user, int $maxTokens = 2048): array
     {
-        $raw = preg_replace('/^```(?:json)?\s*|\s*```$/m', '', $this->chat($system, $user, [], $maxTokens, true));
-        $start = strpos($raw, '{');
-        $end = strrpos($raw, '}');
+        foreach ([$maxTokens, min($maxTokens * 2, 8192)] as $attempt => $budget) {
+            $raw = $this->chat($system, $user, [], $budget, true);
+            $decoded = $this->decodeJson($raw);
 
-        if ($start !== false && $end !== false) {
-            $decoded = json_decode(substr($raw, $start, $end - $start + 1), true);
-            if (is_array($decoded)) {
+            if ($decoded !== null) {
                 return $decoded;
             }
+
+            Log::warning('AI returned unreadable JSON', [
+                'attempt' => $attempt + 1,
+                'max_tokens' => $budget,
+                'length' => mb_strlen($raw),
+                'tail' => mb_substr($raw, -120),
+            ]);
         }
 
         throw new RuntimeException('The AI response could not be read. Please try again.');
+    }
+
+    /** @return array<mixed>|null */
+    private function decodeJson(string $raw): ?array
+    {
+        $raw = (string) preg_replace('/^```(?:json)?\s*|\s*```$/m', '', $raw);
+        $start = strpos($raw, '{');
+        $end = strrpos($raw, '}');
+
+        if ($start === false || $end === false) {
+            return null;
+        }
+
+        $decoded = json_decode(substr($raw, $start, $end - $start + 1), true);
+
+        return is_array($decoded) ? $decoded : null;
     }
 
     private function gemini(string $system, string $user, array $history, int $maxTokens, bool $json): string
@@ -93,6 +120,10 @@ class AiService
             ]);
 
         $this->ensureOk($response);
+
+        if ($response->json('candidates.0.finishReason') === 'MAX_TOKENS') {
+            Log::info('Gemini answer hit maxOutputTokens', ['model' => $this->model(), 'max_tokens' => $maxTokens]);
+        }
 
         return collect($response->json('candidates.0.content.parts', []))->pluck('text')->implode('');
     }

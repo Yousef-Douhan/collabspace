@@ -91,6 +91,7 @@ class MeetingService
                 .'Date: '.$meeting->starts_at->toDateTimeString()."\n"
                 .'Agenda: '.($meeting->agenda ?: '-')."\n\n"
                 ."Transcript:\n".($transcript !== '' ? mb_substr($transcript, 0, 15000) : '(no transcript — summarize the agenda)'),
+            maxTokens: 2048,
         );
 
         $summary = trim((string) ($result['summary'] ?? ''));

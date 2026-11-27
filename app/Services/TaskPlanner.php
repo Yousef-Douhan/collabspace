@@ -119,7 +119,7 @@ class TaskPlanner
             Write titles and descriptions in the same language as the input.
             PROMPT,
             user: 'Team members: '.json_encode($members, JSON_UNESCAPED_UNICODE)."\n\n".$input,
-            maxTokens: 1500,
+            maxTokens: 3000,
         );
 
         $memberIds = $members->pluck('id');

@@ -143,4 +143,25 @@ class MeetingTest extends TestCase
             ->assertStatus(503)
             ->assertJsonPath('message', 'AI is not configured. Add AI_API_KEY to the .env file.');
     }
+
+    public function test_a_cut_off_ai_answer_is_retried_with_a_larger_budget(): void
+    {
+        $meeting = $this->schedule(['transcript' => '[00:01] Host: Kanban is done.']);
+        config(['services.ai.provider' => 'gemini', 'services.ai.key' => 'test-key', 'services.ai.model' => 'gemini-test']);
+        Http::preventStrayRequests();
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::sequence()
+                ->push(['candidates' => [['finishReason' => 'MAX_TOKENS', 'content' => ['parts' => [['text' => '{"summary": "The team confirmed']]]]]])
+                ->push(['candidates' => [['content' => ['parts' => [['text' => '{"summary": "Kanban is done.", "key_points": ["Kanban done"]}']]]]]]),
+        ]);
+
+        Sanctum::actingAs($this->guest);
+        $this->postJson("/api/v1/meetings/{$meeting['id']}/summary")
+            ->assertOk()
+            ->assertJsonPath('data.ai_summary', 'Kanban is done.');
+
+        Http::assertSentCount(2);
+        $budgets = collect(Http::recorded())->map(fn ($pair) => $pair[0]->data()['generationConfig']['maxOutputTokens'])->all();
+        $this->assertSame([2048, 4096], $budgets);
+    }
 }
