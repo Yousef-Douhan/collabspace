@@ -125,7 +125,7 @@
                 </div>
                 <input x-model="q" placeholder="{{ __('Search transcript') }}" class="input mb-3 rounded-full text-sm">
                 <div class="min-h-0 flex-1 space-y-2 overflow-y-auto text-sm">
-                    @forelse (preg_split('/\R+/', trim((string) $meeting->transcript), -1, PREG_SPLIT_NO_EMPTY) as $line)
+                    @forelse (preg_split('/\R+/u', trim((string) $meeting->transcript), -1, PREG_SPLIT_NO_EMPTY) as $line)
                         <p dir="auto" x-show="!q || @js(mb_strtolower($line)).includes(q.toLowerCase())" class="rounded-lg px-2 py-1 hover:bg-slate-50">{{ $line }}</p>
                     @empty
                         <x-empty class="py-4">{{ __('No transcript.') }}</x-empty>

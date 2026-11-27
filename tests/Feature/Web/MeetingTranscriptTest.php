@@ -64,4 +64,16 @@ class MeetingTranscriptTest extends TestCase
 
         $this->assertNull($this->meeting->fresh()->transcript);
     }
+
+    public function test_an_arabic_transcript_is_shown_line_by_line_without_breaking_letters(): void
+    {
+        // "م" is the bytes D9 85, and 0x85 is a line break for a non-Unicode regex.
+        $this->meeting->update(['transcript' => "[00:01] لينا: نراجع اليوم تصميم الأيقونة.\n[00:50] عمر: موافق."]);
+
+        $this->actingAs($this->host)
+            ->get(route('meetings.show', $this->meeting))
+            ->assertOk()
+            ->assertSee('[00:01] لينا: نراجع اليوم تصميم الأيقونة.')
+            ->assertSee('[00:50] عمر: موافق.');
+    }
 }
