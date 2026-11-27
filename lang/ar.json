@@ -511,5 +511,9 @@
     "Save transcript": "حفظ المحضر",
     "Paste a transcript": "الصق محضر الاجتماع",
     "Transcript saved. You can now generate the AI summary.": "تم حفظ المحضر. يمكنك الآن توليد الملخص بالذكاء الاصطناعي.",
-    "Transcript removed.": "تم حذف المحضر."
+    "Transcript removed.": "تم حذف المحضر.",
+    "Edit project": "تعديل المشروع",
+    "Save changes": "حفظ التغييرات",
+    "Delete project": "حذف المشروع",
+    "Delete :name? It will disappear for every member.": "حذف :name؟ سيختفي عند كل الأعضاء."
 }

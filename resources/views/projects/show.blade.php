@@ -11,6 +11,9 @@
         <x-slot:subtitle>
             <span class="mt-2 inline-block rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-600">{{ __(':pct% Completed', ['pct' => $pct]) }}</span>
         </x-slot:subtitle>
+        @can('update', $project)
+            <button type="button" x-data @click="$dispatch('open-modal', 'edit-project')" class="btn-ghost">✎ {{ __('Edit project') }}</button>
+        @endcan
         @can('create', [\App\Models\Task::class, $project])
             @include('tasks._planner', ['project' => $project, 'suggestUrl' => route('planner.project', $project), 'label' => __('Plan with AI')])
         @endcan
@@ -197,4 +200,38 @@
         </div>
         @include('files._upload', ['projects' => collect([$project]), 'selected' => $project->id])
     @endif
+
+    @can('update', $project)
+        <x-modal name="edit-project" :title="__('Edit project')">
+            <form method="POST" action="{{ route('projects.update', $project) }}" class="space-y-3">
+                @csrf @method('PUT')
+                <input type="hidden" name="_modal" value="edit-project">
+                <div><label class="label">{{ __('Project name') }}</label><input name="name" value="{{ old('name', $project->name) }}" required maxlength="255" class="input"></div>
+                <div><label class="label">{{ __('Description') }}</label><textarea name="description" rows="3" dir="auto" class="input">{{ old('description', $project->description) }}</textarea></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="label">{{ __('Status') }}</label>
+                        <select name="status" class="input">@foreach (\App\Enums\ProjectStatus::cases() as $st)<option value="{{ $st->value }}" @selected(old('status', $project->status?->value) === $st->value)>{{ $st->label() }}</option>@endforeach</select>
+                    </div>
+                    <div>
+                        <label class="label">{{ __('Priority') }}</label>
+                        <select name="priority" class="input">@foreach (\App\Enums\Priority::cases() as $pr)<option value="{{ $pr->value }}" @selected(old('priority', $project->priority?->value) === $pr->value)>{{ $pr->label() }}</option>@endforeach</select>
+                    </div>
+                    <div><label class="label">{{ __('Start date') }}</label><input type="date" name="start_date" value="{{ old('start_date', $project->start_date?->format('Y-m-d')) }}" class="input"></div>
+                    <div><label class="label">{{ __('Deadline') }}</label><input type="date" name="end_date" value="{{ old('end_date', $project->end_date?->format('Y-m-d')) }}" class="input"></div>
+                </div>
+                @if ($errors->any() && old('_modal') === 'edit-project')
+                    <ul class="rounded-xl bg-rose-50 px-4 py-2 text-xs text-rose-700">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+                @endif
+                <button class="btn-primary w-full">{{ __('Save changes') }}</button>
+            </form>
+            @can('delete', $project)
+                <form method="POST" action="{{ route('projects.destroy', $project) }}" class="mt-3 border-t border-slate-100 pt-3"
+                      onsubmit="return confirm(@js(__('Delete :name? It will disappear for every member.', ['name' => $project->name])))">
+                    @csrf @method('DELETE')
+                    <button class="btn-danger w-full">{{ __('Delete project') }}</button>
+                </form>
+            @endcan
+        </x-modal>
+    @endcan
 </x-layouts.app>

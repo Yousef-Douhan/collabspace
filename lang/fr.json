@@ -511,5 +511,9 @@
     "Save transcript": "Enregistrer la transcription",
     "Paste a transcript": "Coller une transcription",
     "Transcript saved. You can now generate the AI summary.": "Transcription enregistrée. Vous pouvez maintenant générer le résumé IA.",
-    "Transcript removed.": "Transcription supprimée."
+    "Transcript removed.": "Transcription supprimée.",
+    "Edit project": "Modifier le projet",
+    "Save changes": "Enregistrer les modifications",
+    "Delete project": "Supprimer le projet",
+    "Delete :name? It will disappear for every member.": "Supprimer :name ? Il disparaîtra pour tous les membres."
 }
