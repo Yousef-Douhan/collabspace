@@ -505,5 +505,11 @@
     "You will be the team lead.": "Vous serez le responsable de l'équipe.",
     "Team lead": "Chef d'équipe",
     "Menu": "Menu",
-    "This file type is not allowed.": "Ce type de fichier n'est pas autorisé."
+    "This file type is not allowed.": "Ce type de fichier n'est pas autorisé.",
+    "Meeting transcript": "Transcription de la réunion",
+    "Paste the transcript exported from Google Meet, Zoom or Teams (one line per speaker). The AI summary and the task suggestions are built from it.": "Collez la transcription exportée de Google Meet, Zoom ou Teams (une ligne par intervenant). Le résumé IA et les suggestions de tâches en sont tirés.",
+    "Save transcript": "Enregistrer la transcription",
+    "Paste a transcript": "Coller une transcription",
+    "Transcript saved. You can now generate the AI summary.": "Transcription enregistrée. Vous pouvez maintenant générer le résumé IA.",
+    "Transcript removed.": "Transcription supprimée."
 }

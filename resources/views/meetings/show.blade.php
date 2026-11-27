@@ -43,7 +43,12 @@
                     @if ($meeting->ai_summary)
                         <div dir="auto" class="prose-chat text-sm text-slate-700">{!! \Illuminate\Support\Str::markdown($meeting->ai_summary, ['html_input' => 'strip', 'allow_unsafe_links' => false]) !!}</div>
                     @else
-                        <x-empty class="py-6">{{ $meeting->transcript ? __('No summary yet — generate one from the transcript.') : __('Add a transcript to generate an AI summary.') }}</x-empty>
+                        <x-empty class="py-6">
+                            {{ $meeting->transcript ? __('No summary yet — generate one from the transcript.') : __('Add a transcript to generate an AI summary.') }}
+                            @if ($canSummarize && ! $meeting->transcript)
+                                <a href="{{ route('meetings.show', [$meeting, 'tab' => 'notes']) }}" class="mt-2 block font-medium text-brand">{{ __('Paste a transcript') }} →</a>
+                            @endif
+                        </x-empty>
                     @endif
                 </div>
                 @if ($meeting->key_points)
@@ -77,6 +82,16 @@
                     <h2 class="font-semibold">{{ __('Shared Notes') }}</h2>
                     <textarea name="notes" rows="14" dir="auto" @disabled(! $canSummarize) class="input">{{ old('notes', $meeting->notes) }}</textarea>
                     @if ($canSummarize)<button class="btn-primary">{{ __('Save notes') }}</button>@endif
+                </form>
+                <form method="POST" action="{{ route('meetings.transcript', $meeting) }}" class="card space-y-3 p-5">
+                    @csrf @method('PUT')
+                    <div>
+                        <h2 class="font-semibold">{{ __('Meeting transcript') }}</h2>
+                        <p class="text-xs text-slate-500">{{ __('Paste the transcript exported from Google Meet, Zoom or Teams (one line per speaker). The AI summary and the task suggestions are built from it.') }}</p>
+                    </div>
+                    <textarea name="transcript" rows="10" dir="auto" @disabled(! $canSummarize) placeholder="[00:01] Lina: The Kanban screens are done.&#10;[00:45] Omar: I will review them on Thursday." class="input font-mono text-xs">{{ old('transcript', $meeting->transcript) }}</textarea>
+                    @error('transcript')<p class="text-xs text-rose-600">{{ $message }}</p>@enderror
+                    @if ($canSummarize)<button class="btn-primary">{{ __('Save transcript') }}</button>@endif
                 </form>
             @else
                 <div class="card p-5">

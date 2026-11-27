@@ -122,6 +122,7 @@ Route::middleware('auth')->group(function () {
     Route::post('meetings/{meeting}/respond', [MeetingController::class, 'respond'])->name('meetings.respond');
     Route::post('meetings/{meeting}/summarize', [MeetingController::class, 'summarize'])->name('meetings.summarize')->middleware('throttle:10,1');
     Route::put('meetings/{meeting}/notes', [MeetingController::class, 'updateNotes'])->name('meetings.notes');
+    Route::put('meetings/{meeting}/transcript', [MeetingController::class, 'updateTranscript'])->name('meetings.transcript');
     Route::post('meetings/{meeting}/comments', [MeetingController::class, 'comment'])->name('meetings.comments.store');
     Route::post('meetings/{meeting}/attachments', [MeetingController::class, 'storeAttachment'])->name('meetings.attachments.store');
     Route::get('meeting-attachments/{attachment}', [MeetingController::class, 'downloadAttachment'])->name('meetings.attachments.download');

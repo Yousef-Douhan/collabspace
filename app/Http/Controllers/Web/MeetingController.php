@@ -126,6 +126,18 @@ class MeetingController extends Controller
         return back()->with('status', __('Notes saved.'));
     }
 
+    /** Paste the meeting transcript (e.g. exported from Meet / Zoom / Teams) so the AI can summarize it. */
+    public function updateTranscript(Request $request, Meeting $meeting): RedirectResponse
+    {
+        Gate::authorize('summarize', $meeting);
+
+        $data = $request->validate(['transcript' => ['nullable', 'string', 'max:200000']]);
+        $meeting->update(['transcript' => filled($data['transcript'] ?? null) ? trim($data['transcript']) : null]);
+
+        return redirect()->route('meetings.show', [$meeting, 'tab' => 'summary'])
+            ->with('status', $meeting->transcript ? __('Transcript saved. You can now generate the AI summary.') : __('Transcript removed.'));
+    }
+
     public function comment(Request $request, Meeting $meeting): RedirectResponse
     {
         Gate::authorize('view', $meeting);

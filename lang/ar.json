@@ -505,5 +505,11 @@
     "You will be the team lead.": "ستكون أنت قائد الفريق.",
     "Team lead": "قائد الفريق",
     "Menu": "القائمة",
-    "This file type is not allowed.": "نوع هذا الملف غير مسموح به."
+    "This file type is not allowed.": "نوع هذا الملف غير مسموح به.",
+    "Meeting transcript": "محضر الاجتماع",
+    "Paste the transcript exported from Google Meet, Zoom or Teams (one line per speaker). The AI summary and the task suggestions are built from it.": "الصق المحضر المُصدَّر من Google Meet أو Zoom أو Teams (سطر لكل متحدث). يُبنى منه ملخص الذكاء الاصطناعي واقتراحات المهام.",
+    "Save transcript": "حفظ المحضر",
+    "Paste a transcript": "الصق محضر الاجتماع",
+    "Transcript saved. You can now generate the AI summary.": "تم حفظ المحضر. يمكنك الآن توليد الملخص بالذكاء الاصطناعي.",
+    "Transcript removed.": "تم حذف المحضر."
 }
