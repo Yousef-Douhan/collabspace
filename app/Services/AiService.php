@@ -59,6 +59,8 @@ class AiService
      * Reasoning models spend part of the output budget on hidden "thinking", so a tight
      * budget can cut the JSON off mid-object. If the answer cannot be decoded, ask once
      * more with a larger budget before giving up.
+     *
+     * @return array<mixed>
      */
     public function chatJson(string $system, string $user, int $maxTokens = 2048): array
     {
@@ -97,6 +99,7 @@ class AiService
         return is_array($decoded) ? $decoded : null;
     }
 
+    /** @param  list<array{role: 'user'|'assistant', content: string}>  $history */
     private function gemini(string $system, string $user, array $history, int $maxTokens, bool $json): string
     {
         $base = rtrim(config('services.ai.base_url') ?: 'https://generativelanguage.googleapis.com/v1beta', '/');
@@ -109,6 +112,9 @@ class AiService
         $config = ['maxOutputTokens' => $maxTokens, 'temperature' => 0.4];
         if ($json) {
             $config['responseMimeType'] = 'application/json';
+        }
+        if ($level = $this->thinkingLevel()) {
+            $config['thinkingConfig'] = ['thinkingLevel' => $level];
         }
 
         $response = Http::timeout($this->timeout())
@@ -125,9 +131,13 @@ class AiService
             Log::info('Gemini answer hit maxOutputTokens', ['model' => $this->model(), 'max_tokens' => $maxTokens]);
         }
 
-        return collect($response->json('candidates.0.content.parts', []))->pluck('text')->implode('');
+        /** @var list<array{text?: string}> $parts */
+        $parts = $response->json('candidates.0.content.parts', []);
+
+        return collect($parts)->pluck('text')->implode('');
     }
 
+    /** @param  list<array{role: 'user'|'assistant', content: string}>  $history */
     private function openai(string $system, string $user, array $history, int $maxTokens, bool $json): string
     {
         $base = rtrim(config('services.ai.base_url') ?: 'https://api.openai.com/v1', '/');
@@ -152,6 +162,7 @@ class AiService
         return (string) $response->json('choices.0.message.content');
     }
 
+    /** @param  list<array{role: 'user'|'assistant', content: string}>  $history */
     private function anthropic(string $system, string $user, array $history, int $maxTokens): string
     {
         $base = rtrim(config('services.ai.base_url') ?: 'https://api.anthropic.com/v1', '/');
@@ -169,7 +180,10 @@ class AiService
             ]);
         $this->ensureOk($response);
 
-        return collect($response->json('content', []))->where('type', 'text')->pluck('text')->implode('');
+        /** @var list<array{type?: string, text?: string}> $blocks */
+        $blocks = $response->json('content', []);
+
+        return collect($blocks)->where('type', 'text')->pluck('text')->implode('');
     }
 
     private function ensureOk(Response $response): void
@@ -198,6 +212,19 @@ class AiService
     private function provider(): string
     {
         return strtolower((string) config('services.ai.provider', 'gemini'));
+    }
+
+    /**
+     * Gemini 3.x reasons before it answers; the default level can take tens of seconds.
+     * Older models reject the field, so it is only sent to gemini-3* models.
+     */
+    private function thinkingLevel(): ?string
+    {
+        $level = strtolower(trim((string) config('services.ai.thinking_level')));
+
+        return in_array($level, ['minimal', 'low', 'medium', 'high'], true) && str_starts_with($this->model(), 'gemini-3')
+            ? $level
+            : null;
     }
 
     private function model(): string

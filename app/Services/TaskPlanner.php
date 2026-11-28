@@ -7,6 +7,7 @@ use App\Enums\TaskStatus;
 use App\Enums\Track;
 use App\Models\Meeting;
 use App\Models\Project;
+use App\Models\Task;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -60,7 +61,7 @@ class TaskPlanner
             throw new RuntimeException(__('Add a project description or wiki first, so the AI knows what to plan.'));
         }
 
-        $existing = $project->tasks()->pluck('title')->take(40)->implode('; ');
+        $existing = $project->tasks()->limit(40)->pluck('title')->implode('; ');
 
         return $this->suggest(
             $project,
@@ -79,6 +80,7 @@ class TaskPlanner
      * Creates the tasks the user kept (after editing). Every row is re-validated against the project.
      *
      * @param  list<array<string, mixed>>  $rows
+     * @return Collection<int, Task>
      */
     public function createMany(User $user, Project $project, array $rows, ?Meeting $meeting = null): Collection
     {
@@ -101,10 +103,11 @@ class TaskPlanner
         return $created;
     }
 
+    /** @return list<array<string, mixed>> */
     private function suggest(Project $project, string $instruction, string $input, int $max, Carbon|\DateTimeInterface $today): array
     {
         $members = $project->members()->get(['users.id', 'users.name', 'users.track'])
-            ->map(fn (User $u) => ['id' => $u->id, 'name' => $u->name, 'track' => $u->track?->value]);
+            ->map(fn (User $u) => ['id' => $u->id, 'name' => $u->name, 'track' => $u->track->value]);
 
         $result = $this->ai->chatJson(
             system: <<<PROMPT
@@ -125,7 +128,9 @@ class TaskPlanner
         $memberIds = $members->pluck('id');
         $base = Carbon::parse($today)->startOfDay();
 
-        $tasks = collect($result['tasks'] ?? [])
+        /** @var list<mixed> $suggested */
+        $suggested = $result['tasks'] ?? [];
+        $tasks = collect($suggested)
             ->filter(fn ($t) => is_array($t) && filled($t['title'] ?? null))
             ->take($max)
             ->map(function (array $t) use ($memberIds, $members, $base) {

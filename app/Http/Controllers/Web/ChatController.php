@@ -71,7 +71,11 @@ class ChatController extends Controller
         ]);
     }
 
-    /** Last 60 messages, oldest first, each with `readers` (participants who have seen it). */
+    /**
+     * Last 60 messages, oldest first, each with `readers` (participants who have seen it).
+     *
+     * @return Collection<int, Message>
+     */
     private function threadMessages(Conversation $conversation): Collection
     {
         $messages = $conversation->messages()->with('sender')->latest('id')->limit(60)->get()->reverse()->values();

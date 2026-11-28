@@ -3,18 +3,29 @@
 namespace App\Models;
 
 use App\Notifications\CommentAdded;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Notification;
 
-/** A comment on a task or a meeting. */
+/**
+ * A comment on a task or a meeting.
+ *
+ * @property int $id
+ * @property string $commentable_type
+ * @property int $commentable_id
+ * @property int $user_id
+ * @property string $body
+ * @property Carbon|null $edited_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Model|null $commentable
+ * @property-read User $user
+ */
 class Comment extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'user_id',
         'body',
@@ -47,6 +58,7 @@ class Comment extends Model
         });
     }
 
+    /** @return array<string, string> */
     protected function casts(): array
     {
         return [
@@ -54,11 +66,13 @@ class Comment extends Model
         ];
     }
 
+    /** @return MorphTo<Model, $this> */
     public function commentable(): MorphTo
     {
         return $this->morphTo();
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

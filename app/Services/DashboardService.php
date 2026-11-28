@@ -20,6 +20,7 @@ class DashboardService
     /**
      * @param  string  $period  today|week|month|quarter|year|all: the window for the stat cards and the chart
      * @param  string|null  $track  limit the "Teams" card to one track (ui_ux, front_end, …)
+     * @return array<string, mixed>
      */
     public function build(User $user, ?int $projectId = null, string $period = 'month', ?string $track = null): array
     {
@@ -104,8 +105,8 @@ class DashboardService
                 ->map(fn (User $u) => [
                     'id' => $u->id,
                     'name' => $u->name,
-                    'track' => $u->track?->value,
-                    'availability' => $u->availability?->value,
+                    'track' => $u->track->value,
+                    'availability' => $u->availability->value,
                     'avatar_url' => $u->avatar_url,
                     'is_leader' => $leaderIds->contains($u->id),
                     'tasks' => $u->tasks_count,
@@ -135,7 +136,7 @@ class DashboardService
                     'name' => $f->original_name,
                     'size' => $f->formatted_size,
                     'project' => $f->project->name,
-                    'uploaded_by' => $f->uploader?->name,
+                    'uploaded_by' => $f->uploader->name,
                     'created_at' => $f->created_at->toIso8601String(),
                 ]),
             'recent_activity' => ActivityLog::with('user:id,name')
@@ -160,6 +161,9 @@ class DashboardService
     /**
      * "+9% from last month" for each stat card: tasks created this month vs last month,
      * and the completion-rate difference in percentage points.
+     *
+     * @param  Builder<Task>  $tasks
+     * @return array<string, mixed>
      */
     private function monthOverMonth(Builder $tasks): array
     {
@@ -191,6 +195,9 @@ class DashboardService
      * "Project overview" chart: tasks created vs completed, bucketed to fit the chosen period
      * (Figma "Duration" menu): today → 3-hour slots, week → days, month → days so far,
      * quarter → weeks, year → months of this year, all → the last 6 months.
+     *
+     * @param  Builder<Task>  $tasks
+     * @return list<array<string, int|string>>
      */
     private function overviewSeries(Builder $tasks, string $period): array
     {
@@ -227,7 +234,12 @@ class DashboardService
         return $series;
     }
 
-    /** Tasks created vs completed per month — the "Project overview" line chart. */
+    /**
+     * Tasks created vs completed per month — the "Project overview" line chart.
+     *
+     * @param  Builder<Task>  $tasks
+     * @return list<array<string, int|string>>
+     */
     private function monthlySeries(Builder $tasks, int $months): array
     {
         $since = Trend::months($months)->first();

@@ -36,6 +36,7 @@ class ProjectService
         });
     }
 
+    /** @param  array<string, mixed>  $data */
     public function update(User $actor, Project $project, array $data): Project
     {
         $project->update($data);

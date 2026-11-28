@@ -14,6 +14,7 @@ use App\Models\ProjectFile;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -24,7 +25,11 @@ class AdminService
 {
     public function __construct(private ActivityLogger $activity) {}
 
-    /** Whole-workspace numbers (admins see everything, so no visibility scope here). */
+    /**
+     * Whole-workspace numbers (admins see everything, so no visibility scope here).
+     *
+     * @return array<string, mixed>
+     */
     public function stats(): array
     {
         $today = now()->startOfDay();
@@ -62,13 +67,22 @@ class AdminService
         ];
     }
 
-    /** Latest actions across the whole workspace. */
-    public function recentActivity(int $limit = 15)
+    /**
+     * Latest actions across the whole workspace.
+     *
+     * @return Collection<int, ActivityLog>
+     */
+    public function recentActivity(int $limit = 15): Collection
     {
         return ActivityLog::with(['user:id,name,avatar_path', 'project:id,name'])->latest('id')->limit($limit)->get();
     }
 
-    /** Users with workload counts; filters: q (name/email), role, status (active|deactivated). */
+    /**
+     * Users with workload counts; filters: q (name/email), role, status (active|deactivated).
+     *
+     * @param  array<string, string|null>  $filters
+     * @return Builder<User>
+     */
     public function users(array $filters = []): Builder
     {
         return User::query()

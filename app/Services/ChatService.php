@@ -6,6 +6,7 @@ use App\Enums\AttachmentType;
 use App\Enums\ConversationType;
 use App\Events\ConversationUpdated;
 use App\Models\Conversation;
+use App\Models\Membership;
 use App\Models\Message;
 use App\Models\User;
 use App\Notifications\MessageReceived;
@@ -24,6 +25,8 @@ class ChatService
     /**
      * The user's conversations with: pivot state, participants, latest message
      * and an "unread_count" (messages from others after the user's last_read_at).
+     *
+     * @return BelongsToMany<Conversation, User, Membership>
      */
     public function conversationsFor(User $user): BelongsToMany
     {
@@ -139,7 +142,11 @@ class ChatService
         $conversation->participants()->updateExistingPivot($user->id, ['last_read_at' => now()]);
     }
 
-    /** Pin / archive only for this user. */
+    /**
+     * Pin / archive only for this user.
+     *
+     * @param  array{pinned?: bool, archived?: bool}  $state
+     */
     public function updateState(User $user, Conversation $conversation, array $state): void
     {
         $conversation->participants()->updateExistingPivot(

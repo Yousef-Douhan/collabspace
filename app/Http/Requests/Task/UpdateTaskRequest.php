@@ -15,6 +15,7 @@ class UpdateTaskRequest extends FormRequest
         return $this->user()->can('update', $this->route('task'));
     }
 
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         $task = $this->route('task');
@@ -39,6 +40,7 @@ class UpdateTaskRequest extends FormRequest
         ];
     }
 
+    /** @return array<string, string> */
     public function messages(): array
     {
         return [

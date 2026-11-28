@@ -80,7 +80,12 @@ class ProjectController extends Controller
         return $this->show($request, $project);
     }
 
-    /** Adds members/tasks counters and the viewer's role in one query. */
+    /**
+     * Adds members/tasks counters and the viewer's role in one query.
+     *
+     * @param  Builder<Project>  $query
+     * @return Builder<Project>
+     */
     private function withStats(Builder $query, int $userId): Builder
     {
         return $query

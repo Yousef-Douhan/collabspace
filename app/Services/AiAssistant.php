@@ -54,7 +54,11 @@ class AiAssistant
         PROMPT;
     }
 
-    /** Snapshot limited to what $user may see (same scopes as the API). */
+    /**
+     * Snapshot limited to what $user may see (same scopes as the API).
+     *
+     * @return array<string, mixed>
+     */
     public function context(User $user): array
     {
         $projects = Project::visibleTo($user)
@@ -67,7 +71,7 @@ class AiAssistant
             ->get();
 
         return [
-            'me' => ['name' => $user->name, 'job_title' => $user->job_title, 'track' => $user->track?->value],
+            'me' => ['name' => $user->name, 'job_title' => $user->job_title, 'track' => $user->track->value],
             'projects' => $projects->map(fn (Project $p) => [
                 'name' => $p->name,
                 'status' => $p->status->value,
@@ -112,8 +116,8 @@ class AiAssistant
                 ->map(fn (User $u) => [
                     'name' => $u->name,
                     'job_title' => $u->job_title,
-                    'track' => $u->track?->value,
-                    'availability' => $u->availability?->value,
+                    'track' => $u->track->value,
+                    'availability' => $u->availability->value,
                     'open_tasks' => $u->open_tasks_count,
                 ]),
         ];

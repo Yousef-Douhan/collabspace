@@ -9,6 +9,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /** @mixin Project */
 class ProjectResource extends JsonResource
 {
+    /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
         return [
@@ -16,8 +17,8 @@ class ProjectResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'type' => $this->type,
-            'priority' => $this->priority?->value,
-            'status' => $this->status?->value,
+            'priority' => $this->priority->value,
+            'status' => $this->status->value,
             'start_date' => $this->start_date?->toDateString(),
             'end_date' => $this->end_date?->toDateString(),
             'owner' => new UserSummaryResource($this->whenLoaded('owner')),

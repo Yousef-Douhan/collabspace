@@ -83,6 +83,7 @@ class DatabaseSeeder extends Seeder
         }
 
         // --- Tasks -------------------------------------------------------------
+        /** @var list<array{Project, string, Track, TaskStatus, Priority, list<User>, int, int}> $tasks */
         $tasks = [
             [$alpha, 'Design Kanban board screens', Track::UiUx, TaskStatus::Completed, Priority::High, [$lina], -10, -2],
             [$alpha, 'Build authentication API with Sanctum', Track::BackEnd, TaskStatus::Completed, Priority::High, [$sara], -9, -3],

@@ -98,7 +98,11 @@ class TeamService
         $this->activity->log($actor, 'project.team_removed', "removed team {$team->name} from {$project->name}", $team, $project);
     }
 
-    /** Adds people to a project as members, without touching anyone already there. */
+    /**
+     * Adds people to a project as members, without touching anyone already there.
+     *
+     * @param  array<int, int>  $userIds
+     */
     private function joinProject(Project $project, array $userIds): void
     {
         $already = $project->members()->pluck('users.id')->all();

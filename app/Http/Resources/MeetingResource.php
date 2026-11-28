@@ -9,6 +9,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /** @mixin Meeting */
 class MeetingResource extends JsonResource
 {
+    /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
         $me = $this->relationLoaded('attendees')
@@ -22,8 +23,8 @@ class MeetingResource extends JsonResource
             'notes' => $this->notes,
             'location' => $this->location,
             'meeting_link' => $this->meeting_link,
-            'starts_at' => $this->starts_at?->toIso8601String(),
-            'ends_at' => $this->ends_at?->toIso8601String(),
+            'starts_at' => $this->starts_at->toIso8601String(),
+            'ends_at' => $this->ends_at->toIso8601String(),
             'reminder_minutes' => $this->reminder_minutes,
             'project' => $this->whenLoaded('project', fn () => $this->project
                 ? ['id' => $this->project->id, 'name' => $this->project->name]
@@ -31,7 +32,7 @@ class MeetingResource extends JsonResource
             'creator' => new UserSummaryResource($this->whenLoaded('creator')),
             'attendees' => UserSummaryResource::collection($this->whenLoaded('attendees')),
             'attendees_count' => $this->whenLoaded('attendees', fn () => $this->attendees->count()),
-            'my_response' => $me?->pivot?->response,
+            'my_response' => $me?->pivot->response,
             'has_transcript' => filled($this->transcript),
             // Long fields only on the single-meeting endpoints.
             'transcript' => $this->when(! $request->routeIs('api.v1.meetings.index'), $this->transcript),

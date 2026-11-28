@@ -7,6 +7,7 @@ use App\Enums\TaskStatus;
 use App\Enums\Track;
 use Database\Factories\TaskFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,7 +15,35 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $project_id
+ * @property int $created_by
+ * @property string $title
+ * @property string|null $description
+ * @property TaskStatus $status
+ * @property Priority $priority
+ * @property Track $track
+ * @property int $progress
+ * @property int $position
+ * @property Carbon|null $start_date
+ * @property Carbon|null $due_date
+ * @property Carbon|null $completed_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property int|null $estimated_hours
+ * @property-read Project $project
+ * @property-read User $creator
+ * @property-read Collection<int, User> $assignees
+ * @property-read Collection<int, ProjectFile> $files
+ * @property-read Collection<int, Comment> $comments
+ * @property-read int|null $files_count
+ * @property-read int|null $comments_count
+ * @property-read Membership $pivot the membership row, when loaded through a many-to-many relation
+ */
 class Task extends Model
 {
     /** @use HasFactory<TaskFactory> */
@@ -44,6 +73,7 @@ class Task extends Model
         'position' => 0,
     ];
 
+    /** @return array<string, string> */
     protected function casts(): array
     {
         return [
@@ -59,10 +89,15 @@ class Task extends Model
         ];
     }
 
-    /** Tasks in projects the user can see. */
+    /**
+     * Tasks in projects the user can see.
+     *
+     * @param  Builder<Task>  $query
+     * @return Builder<Task>
+     */
     public function scopeVisibleTo(Builder $query, User $user): Builder
     {
-        return $query->whereHas('project', fn (Builder $q) => $q->visibleTo($user));
+        return $query->whereIn('project_id', Project::visibleTo($user)->select('projects.id'));
     }
 
     public function isOverdue(): bool
@@ -75,28 +110,34 @@ class Task extends Model
 
     // --- Relations -------------------------------------------------------
 
+    /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /** @return BelongsToMany<User, $this, Membership> */
     public function assignees(): BelongsToMany
     {
         return $this->belongsToMany(User::class)
+            ->using(Membership::class)
             ->withPivot('is_reviewer')
             ->withTimestamps();
     }
 
+    /** @return HasMany<ProjectFile, $this> */
     public function files(): HasMany
     {
         return $this->hasMany(ProjectFile::class);
     }
 
+    /** @return MorphMany<Comment, $this> */
     public function comments(): MorphMany
     {
         return $this->morphMany(Comment::class, 'commentable')->oldest('id');

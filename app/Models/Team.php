@@ -3,30 +3,52 @@
 namespace App\Models;
 
 use App\Enums\TeamRole;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Carbon;
 
-/** A group of people with one or more leads; linking it to a project adds its members there. */
+/**
+ * A group of people with one or more leads; linking it to a project adds its members there.
+ *
+ * @property int $id
+ * @property string $name
+ * @property string|null $description
+ * @property int|null $created_by
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Collection<int, User> $members
+ * @property-read Collection<int, User> $leads
+ * @property-read Collection<int, Project> $projects
+ * @property-read User|null $creator
+ * @property-read int|null $members_count
+ * @property-read int|null $projects_count
+ * @property-read Membership $pivot the membership row, when loaded through a many-to-many relation
+ */
 class Team extends Model
 {
     protected $fillable = ['name', 'description', 'created_by'];
 
+    /** @return BelongsToMany<User, $this, Membership> */
     public function members(): BelongsToMany
     {
-        return $this->belongsToMany(User::class)->withPivot('role')->withTimestamps()->orderBy('name');
+        return $this->belongsToMany(User::class)->using(Membership::class)->withPivot('role')->withTimestamps()->orderBy('name');
     }
 
+    /** @return BelongsToMany<User, $this, Membership> */
     public function leads(): BelongsToMany
     {
         return $this->members()->wherePivot('role', TeamRole::Lead->value);
     }
 
+    /** @return BelongsToMany<Project, $this> */
     public function projects(): BelongsToMany
     {
         return $this->belongsToMany(Project::class)->withTimestamps();
     }
 
+    /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

@@ -36,6 +36,9 @@ return [
         'model' => env('AI_MODEL'),
         'base_url' => env('AI_BASE_URL'),
         'timeout' => (int) env('AI_TIMEOUT', 55), // seconds; nginx allows 120s, so a retry still fits
+        // Gemini 3.x only: how much hidden "thinking" the model does before answering.
+        // low = fast enough for a web request; '' sends nothing (provider default).
+        'thinking_level' => env('AI_THINKING_LEVEL', 'low'),
     ],
 
     // "Continue with GitHub / Google" (Socialite). A provider's button only shows once both keys are set.

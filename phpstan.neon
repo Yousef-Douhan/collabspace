@@ -1,6 +1,5 @@
 includes:
     - vendor/larastan/larastan/extension.neon
-    - phpstan-baseline.neon
 
 parameters:
     # Static analysis of the application code (Larastan understands Eloquent, facades and the container).
@@ -9,8 +8,7 @@ parameters:
         - routes/
         - database/seeders/
 
-    # 0 = loosest, 10 = strictest. 5 checks types of arguments passed to methods and functions.
-    level: 5
+    # 0 = loosest, 10 = strictest. 6 also requires every array and collection to say what it holds.
+    level: 6
 
-    # Errors that existed when Larastan was added live in the baseline; new code must be clean.
-    reportUnmatchedIgnoredErrors: false
+    reportUnmatchedIgnoredErrors: true

@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\EnsureActiveUser;
 use App\Http\Middleware\EnsureAdmin;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -19,6 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Behind Render / Docker proxies: trust X-Forwarded-* so URLs and assets stay https.
         $middleware->trustProxies(at: '*');
+        // Every response (pages, API, downloads, errors): a traceable id + hardening headers.
+        $middleware->prepend(AssignRequestId::class);
+        $middleware->append(SecurityHeaders::class);
         $middleware->web(append: [SetLocale::class, EnsureActiveUser::class]);
         $middleware->alias(['admin' => EnsureAdmin::class]);
         $middleware->api(append: [SetLocale::class]);

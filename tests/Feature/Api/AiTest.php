@@ -79,4 +79,20 @@ class AiTest extends TestCase
 
         $this->assertSame(0, $user->aiMessages()->count());
     }
+
+    public function test_gemini_3_models_are_asked_to_think_briefly_and_older_models_are_not(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+
+        $this->fakeAi('Hi');
+        config(['services.ai.model' => 'gemini-3.5-flash', 'services.ai.thinking_level' => 'low']);
+        $this->postJson('/api/v1/ai/ask', ['message' => 'hello'])->assertCreated();
+        Http::assertSent(fn ($request) => ($request->data()['generationConfig']['thinkingConfig'] ?? null) === ['thinkingLevel' => 'low']);
+
+        $this->fakeAi('Hi');
+        config(['services.ai.model' => 'gemini-2.5-flash']);
+        $this->postJson('/api/v1/ai/ask', ['message' => 'hello again'])->assertCreated();
+        Http::assertSent(fn ($request) => str_contains($request->url(), 'gemini-2.5-flash')
+            && ! isset($request->data()['generationConfig']['thinkingConfig']));
+    }
 }

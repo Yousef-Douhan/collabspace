@@ -48,7 +48,7 @@ jobs:
       - name: Code style (Laravel Pint)
         run: vendor/bin/pint --test
 
-      - name: Static analysis (Larastan, level 5)
+      - name: Static analysis (Larastan, level 6, no baseline)
         run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
 
       - name: Test suite (SQLite in memory, AI faked)

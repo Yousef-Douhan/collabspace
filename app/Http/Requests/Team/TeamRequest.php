@@ -14,6 +14,7 @@ class TeamRequest extends FormRequest
         return true;
     }
 
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         $team = $this->route('team');

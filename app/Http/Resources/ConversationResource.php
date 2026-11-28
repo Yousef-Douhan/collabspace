@@ -9,6 +9,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /** @mixin Conversation */
 class ConversationResource extends JsonResource
 {
+    /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
         $viewer = $request->user();
@@ -16,7 +17,7 @@ class ConversationResource extends JsonResource
 
         return [
             'id' => $this->id,
-            'type' => $this->type?->value,
+            'type' => $this->type->value,
             'name' => $this->displayNameFor($viewer),
             'project_id' => $this->project_id,
             'participants' => UserSummaryResource::collection($this->whenLoaded('participants')),

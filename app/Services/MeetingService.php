@@ -16,6 +16,7 @@ class MeetingService
 {
     public function __construct(private ActivityLogger $activity, private AiService $ai, private SlackNotifier $slack) {}
 
+    /** @param  array<string, mixed>  $data */
     public function create(User $creator, array $data): Meeting
     {
         $meeting = DB::transaction(function () use ($creator, $data) {
@@ -40,6 +41,7 @@ class MeetingService
         return $meeting;
     }
 
+    /** @param  array<string, mixed>  $data */
     public function update(User $actor, Meeting $meeting, array $data): Meeting
     {
         DB::transaction(function () use ($actor, $meeting, $data) {
@@ -51,7 +53,9 @@ class MeetingService
             $meeting->update(Arr::except($data, ['attendees']));
 
             if (array_key_exists('attendees', $data)) {
-                $keep = collect($data['attendees'] ?? [])->push($meeting->created_by)->unique();
+                /** @var list<int> $attendees */
+                $attendees = $data['attendees'] ?? [];
+                $keep = collect($attendees)->push($meeting->created_by)->unique();
                 $meeting->attendees()->whereNotIn('users.id', $keep)->detach();
                 $this->invite($actor, $meeting, $keep->all());
             }
@@ -87,7 +91,7 @@ class MeetingService
             Use only facts from the input. Write in the same language as the transcript.
             PROMPT,
             user: "Meeting: {$meeting->title}\n"
-                .'Project: '.($meeting->project?->name ?? 'General')."\n"
+                .'Project: '.($meeting->project->name ?? 'General')."\n"
                 .'Date: '.$meeting->starts_at->toDateTimeString()."\n"
                 .'Agenda: '.($meeting->agenda ?: '-')."\n\n"
                 ."Transcript:\n".($transcript !== '' ? mb_substr($transcript, 0, 15000) : '(no transcript — summarize the agenda)'),
@@ -143,7 +147,11 @@ class MeetingService
         return $due->count();
     }
 
-    /** Attach new attendees (pending) and notify only the newly invited ones. */
+    /**
+     * Attach new attendees (pending) and notify only the newly invited ones.
+     *
+     * @param  array<int, int>  $userIds
+     */
     private function invite(User $by, Meeting $meeting, array $userIds): void
     {
         $existing = $meeting->attendees()->pluck('users.id');

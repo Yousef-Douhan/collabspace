@@ -34,11 +34,13 @@ abstract class WorkspaceNotification extends Notification
         return __($key, $params, 'en');
     }
 
+    /** @return list<string> */
     public function via(object $notifiable): array
     {
         return ['database'];
     }
 
+    /** @return array<string, mixed> */
     public function toArray(object $notifiable): array
     {
         [$key, $params] = $this->line();
@@ -56,6 +58,7 @@ abstract class WorkspaceNotification extends Notification
     /**
      * Title and sentence of a stored notification in the given (or current) language.
      *
+     * @param  array<string, mixed>  $data
      * @return array{title: string, message: string}
      */
     public static function present(array $data, ?string $locale = null): array

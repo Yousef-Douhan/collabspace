@@ -14,6 +14,7 @@ class StoreProjectRequest extends FormRequest
         return true; // any signed-in user can start a project (ProjectPolicy::create)
     }
 
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [

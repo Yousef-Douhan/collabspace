@@ -28,7 +28,11 @@ class SocialAuthController extends Controller
 {
     public const PROVIDERS = ['github' => 'GitHub', 'google' => 'Google'];
 
-    /** Providers with credentials configured, e.g. ['github' => 'GitHub']. */
+    /**
+     * Providers with credentials configured, e.g. ['github' => 'GitHub'].
+     *
+     * @return array<string, string>
+     */
     public static function enabled(): array
     {
         return array_filter(

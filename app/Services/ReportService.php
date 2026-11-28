@@ -14,10 +14,17 @@ use App\Support\Trend;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 
 class ReportService
 {
-    /** Live numbers for the Report screen. */
+    /**
+     * Live numbers for the Report screen.
+     *
+     * @return array<string, mixed>
+     */
     public function overview(User $user, ?int $projectId = null, ?CarbonInterface $from = null, ?CarbonInterface $to = null): array
     {
         $projects = Project::visibleTo($user)
@@ -72,7 +79,7 @@ class ReportService
                 return [
                     'user_id' => $u->id,
                     'name' => $u->name,
-                    'track' => $u->track?->value,
+                    'track' => $u->track->value,
                     'assigned' => $u->tasks->count(),
                     'completed' => $done,
                     'overdue' => $u->tasks->filter($isOverdue)->count(),
@@ -105,8 +112,14 @@ class ReportService
         ]);
     }
 
-    /** The three cards at the top of the Report screen, each with its change vs last month. */
-    private function kpis($projects, $memberIds): array
+    /**
+     * The three cards at the top of the Report screen, each with its change vs last month.
+     *
+     * @param  EloquentCollection<int, Project>  $projects
+     * @param  Collection<int, mixed>  $memberIds
+     * @return array<string, mixed>
+     */
+    private function kpis(EloquentCollection $projects, Collection $memberIds): array
     {
         $thisMonth = CarbonImmutable::now()->startOfMonth();
         $lastMonth = $thisMonth->subMonth();
@@ -143,8 +156,14 @@ class ReportService
         ];
     }
 
-    /** Series for the three charts on the Report screen (last 6 months). */
-    private function charts($projectIds, $memberIds): array
+    /**
+     * Series for the three charts on the Report screen (last 6 months).
+     *
+     * @param  Collection<int, mixed>  $projectIds
+     * @param  Collection<int, mixed>  $memberIds
+     * @return array<string, mixed>
+     */
+    private function charts(Collection $projectIds, Collection $memberIds): array
     {
         $months = Trend::months(6);
         $tasks = Task::whereIn('project_id', $projectIds)->get(['id', 'status', 'due_date', 'created_at', 'completed_at']);
@@ -198,13 +217,15 @@ class ReportService
     public function aiDraft(User $user, ReportType $type, ?int $projectId, ?CarbonInterface $from, ?CarbonInterface $to): string
     {
         $o = $this->overview($user, $projectId, $from, $to);
+        /** @var Collection<int, array<string, mixed>> $team */
+        $team = $o['team_performance'];
         $facts = json_encode([
             'report_type' => $type->label(),
             'period' => $o['period'],
             'totals' => $o['totals'],
             'kpis' => $o['kpis'],
             'projects' => $o['project_progress'],
-            'team' => collect($o['team_performance'])->map(fn ($m) => collect($m)->only(['name', 'assigned', 'completed', 'overdue', 'completion_rate'])),
+            'team' => $team->map(fn (array $m) => Arr::only($m, ['name', 'assigned', 'completed', 'overdue', 'completion_rate'])),
         ], JSON_UNESCAPED_UNICODE);
 
         $text = trim(app(AiService::class)->chat(

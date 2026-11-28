@@ -12,7 +12,7 @@ Built with Laravel 13 for the **Huma-volve CollabSpace Challenge** · Figma: *Co
 ![Alpine.js](https://img.shields.io/badge/Alpine.js-3-8BC0D0?logo=alpinedotjs&logoColor=white)
 [![CI](https://github.com/Yousef-Douhan/collabspace/actions/workflows/ci.yml/badge.svg)](https://github.com/Yousef-Douhan/collabspace/actions/workflows/ci.yml)
 ![Tests](https://img.shields.io/badge/tests-150%2B_passing-2EA44F)
-![Larastan](https://img.shields.io/badge/Larastan-level_5-2A5EA7)
+![Larastan](https://img.shields.io/badge/Larastan-level_6-2A5EA7)
 ![Realtime](https://img.shields.io/badge/realtime-Laravel_Reverb-FF2D20?logo=laravel&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-one_command-2496ED?logo=docker&logoColor=white)
 ![i18n](https://img.shields.io/badge/i18n-English_%7C_Arabic_(RTL)_%7C_French-0B5FFF)
@@ -307,6 +307,8 @@ tests/Feature/                Api/ · Web/
 | **Upload filtering** | A `SafeUpload` rule rejects files a browser or server could execute (`.php`, `.phar`, `.html`, `.svg`, `.js`, `.exe`, `.sh` …), including double extensions such as `invoice.php.pdf`. Max 20 MB. |
 | **Private realtime channels** | Reverb channels are private and authorized per project or conversation. The socket payload carries IDs only, never the message text. |
 | **XSS & CSRF** | Markdown is rendered with raw HTML stripped, Blade escapes output by default, and every web form carries a CSRF token. |
+| **Security headers** | Every response (pages, API, downloads, errors) sends `nosniff`, `X-Frame-Options: DENY`, a `frame-ancestors 'none'` CSP, a strict `Referrer-Policy`, a `Permissions-Policy` that turns off camera / mic / location, and HSTS over https in production. |
+| **Traceable requests** | Each request gets an `X-Request-Id` that is returned to the client and added to every log line, so an error report can be matched to the logs. |
 | **Production config** | `APP_DEBUG=false` in production; secrets live in environment variables, never in the repository. |
 
 **Performance**
@@ -327,7 +329,7 @@ php artisan test
 vendor/bin/phpstan analyse   # or: composer analyse
 ```
 
-**150+ tests, all passing.** GitHub Actions runs them, plus a Laravel Pint style check, **Larastan static analysis (level 5)** and a production asset build, on every push. The suite runs on in-memory SQLite and fakes every AI call, so it needs no database or API key.
+**170+ tests, all passing.** GitHub Actions runs them, plus a Laravel Pint style check, **Larastan static analysis (level 6, no baseline: every model property, relation and array is typed)** and a production asset build, on every push. The suite runs on in-memory SQLite and fakes every AI call, so it needs no database or API key.
 
 | Suite | Coverage |
 |---|---|

@@ -16,6 +16,7 @@ class StoreMeetingRequest extends FormRequest
         return $this->user()->can('create', [Meeting::class, $project]);
     }
 
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [

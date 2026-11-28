@@ -45,6 +45,7 @@ class UserNotified implements ShouldBroadcastNow
         return 'notification.created';
     }
 
+    /** @return array<string, mixed> */
     public function broadcastWith(): array
     {
         return $this->payload;

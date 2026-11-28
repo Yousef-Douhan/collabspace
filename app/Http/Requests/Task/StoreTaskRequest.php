@@ -20,6 +20,7 @@ class StoreTaskRequest extends FormRequest
         return $project === null || $this->user()->can('create', [Task::class, $project]);
     }
 
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [
@@ -45,6 +46,7 @@ class StoreTaskRequest extends FormRequest
         ];
     }
 
+    /** @return array<string, string> */
     public function messages(): array
     {
         return [

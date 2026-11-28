@@ -52,6 +52,7 @@ class TaskService
         return $task;
     }
 
+    /** @param  array<string, mixed>  $data */
     public function update(User $actor, Task $task, array $data): Task
     {
         $task = DB::transaction(function () use ($actor, $task, $data) {
@@ -155,7 +156,11 @@ class TaskService
         }
     }
 
-    /** Notify people who were just assigned (never the person doing the assigning). */
+    /**
+     * Notify people who were just assigned (never the person doing the assigning).
+     *
+     * @param  array<int, int>  $userIds
+     */
     private function notifyAssigned(User $by, Task $task, array $userIds): void
     {
         $recipients = User::whereIn('id', $userIds)->whereKeyNot($by->id)->get();
@@ -187,7 +192,6 @@ class TaskService
                 TaskStatus::Todo => 0,
                 TaskStatus::InProgress => max((int) $task->progress, 10),
                 TaskStatus::InReview => max((int) $task->progress, 80),
-                default => (int) $task->progress,
             };
         }
     }

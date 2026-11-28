@@ -11,6 +11,7 @@ class UpdateWikiRequest extends FormRequest
         return $this->user()->can('updateWiki', $this->route('project'));
     }
 
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [

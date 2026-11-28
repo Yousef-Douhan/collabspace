@@ -17,6 +17,7 @@ class StoreFileRequest extends FormRequest
         return $project === null || $this->user()->can('create', [ProjectFile::class, $project]);
     }
 
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [

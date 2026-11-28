@@ -12,6 +12,7 @@ class SendMessageRequest extends FormRequest
         return $this->user()->can('view', $this->route('conversation'));
     }
 
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [
